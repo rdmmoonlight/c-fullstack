@@ -10,7 +10,9 @@
             <nav id="sidebar-icons" class="sidebar-icons text-white d-flex flex-column align-items-center py-3">
 
                 <!-- BRAND / HOME ICON -->
-                <NavLink href="/" Match="NavLinkMatch.All" class="brand-container text-center text-warning text-decoration-none mb-2" title="Aumo Finance Home" @onclick="CloseFlyout">
+                <NavLink href="/" Match="NavLinkMatch.All"
+                         class="brand-container text-center text-warning text-decoration-none mb-2" title="Aumo Finance Home"
+                         @onclick="CloseFlyout">
                     <i class="bi bi-house-door-fill fs-5"></i>
                 </NavLink>
 
@@ -26,51 +28,33 @@
                         </NavLink>
                     </li>
 
-                    <!-- MENU AI ASSISTANT -->
                     <li class="nav-item mb-2">
-                        <NavLink href="/ai-assistant" class="nav-link icon-btn" title="AI Financial Assistant" @onclick="CloseFlyout">
-                            <i class="bi bi-robot fs-5"></i>
-                        </NavLink>
-                    </li>
-
-                    <li class="nav-item mb-2">
-                        <NavLink href="/journal-entry/create" class="nav-link icon-btn" title="Journal Entry" @onclick="CloseFlyout">
+                        <NavLink href="/journal-entry/create" class="nav-link icon-btn" title="Journal Entry"
+                                 @onclick="CloseFlyout">
                             <i class="bi bi-journal-plus fs-5"></i>
                         </NavLink>
                     </li>
 
                     <!-- MENU REPORTS (TOGGLE FLYOUT) -->
                     <li class="nav-item mb-2">
-                        <button type="button" 
-                                @onclick="ToggleReportsFlyout" 
-                                class="nav-link icon-btn border-0 bg-transparent @(showReportsFlyout ? "active" : "")" 
+                        <button type="button" @onclick="ToggleReportsFlyout"
+                                class="nav-link icon-btn border-0 bg-transparent @(showReportsFlyout ? "active" : "")"
                                 title="Reports">
                             <i class="bi bi-folder fs-5"></i>
                         </button>
                     </li>
 
                     <li class="nav-item mb-2">
-                        <NavLink href="/chart-of-accounts" class="nav-link icon-btn" title="Chart of Accounts" @onclick="CloseFlyout">
+                        <NavLink href="/chart-of-accounts" class="nav-link icon-btn" title="Chart of Accounts"
+                                 @onclick="CloseFlyout">
                             <i class="bi bi-diagram-3 fs-5"></i>
                         </NavLink>
                     </li>
 
                     <li class="nav-item mb-2">
-                        <NavLink href="/periods" class="nav-link icon-btn" title="Financial Periods" @onclick="CloseFlyout">
+                        <NavLink href="/periods" class="nav-link icon-btn" title="Financial Periods"
+                                 @onclick="CloseFlyout">
                             <i class="bi bi-calendar3 fs-5"></i>
-                        </NavLink>
-                    </li>
-
-                    <!-- MENU DOCUMENTS -->
-                    <li class="nav-item mb-2">
-                        <NavLink href="/documents" class="nav-link icon-btn" title="Economic Documents" @onclick="CloseFlyout">
-                            <i class="bi bi-file-earmark-text fs-5"></i>
-                        </NavLink>
-                    </li>
-
-                    <li class="nav-item mb-2">
-                        <NavLink href="/guardian" class="nav-link icon-btn" title="Guardian Security" @onclick="CloseFlyout">
-                            <i class="bi bi-shield-check fs-5"></i>
                         </NavLink>
                     </li>
 
@@ -84,25 +68,26 @@
 
                 <!-- AUTH MENU & PROFILE DROPDOWN WITH STATUS LED -->
                 <div class="mt-auto dropup position-relative">
-                    <button class="nav-link icon-btn border-0 bg-transparent" 
-                            id="userDropdown" 
-                            data-bs-toggle="dropdown" 
-                            aria-expanded="false" 
-                            title="@context.User.Identity?.Name">
+                    <button class="nav-link icon-btn border-0 bg-transparent" id="userDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false" title="@context.User.Identity?.Name">
                         <i class="bi bi-person-circle fs-5"></i>
                     </button>
                     <!-- Status LED Micro Glow -->
-                    <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" style="width: 7px; height: 7px; box-shadow: 0 0 6px #10b981;"></span>
+                    <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle"
+                          style="width: 7px; height: 7px; box-shadow: 0 0 6px #10b981;"></span>
 
                     <ul class="dropdown-menu dropdown-menu-dark shadow ms-2 mb-2 fs-7" aria-labelledby="userDropdown">
                         <li class="dropdown-header text-truncate" style="max-width: 180px;">
                             @(context.User.Identity?.Name ?? "User")
                         </li>
 
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
 
                         <li>
-                            <NavLink class="dropdown-item d-flex align-items-center" href="/settings" @onclick="CloseFlyout">
+                            <NavLink class="dropdown-item d-flex align-items-center" href="/settings"
+                                     @onclick="CloseFlyout">
                                 <i class="bi bi-gear me-2"></i> Settings
                             </NavLink>
                         </li>
@@ -110,7 +95,8 @@
                         <li>
                             <form action="/auth/logout" method="post" class="d-inline">
                                 <AntiforgeryToken />
-                                <button type="submit" class="dropdown-item d-flex align-items-center text-danger border-0 bg-transparent w-100">
+                                <button type="submit"
+                                        class="dropdown-item d-flex align-items-center text-danger border-0 bg-transparent w-100">
                                     <i class="bi bi-box-arrow-right me-2"></i> Sign Out
                                 </button>
                             </form>
@@ -125,61 +111,76 @@
             {
                 <div id="reports-flyout" class="sidebar-flyout">
 
-                    <div class="p-3 border-bottom border-secondary border-opacity-25 d-flex justify-content-end align-items-center">
-                        <button type="button" @onclick="CloseFlyout" class="btn-close btn-close-white btn-sm" aria-label="Close"></button>
+                    <div
+                        class="p-3 border-bottom border-secondary border-opacity-25 d-flex justify-content-end align-items-center">
+                        <button type="button" @onclick="CloseFlyout" class="btn-close btn-close-white btn-sm"
+                                aria-label="Close"></button>
                     </div>
 
                     <div class="list-group list-group-flush p-2 small">
 
-                        <NavLink href="/reports/general-journal" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/general-journal"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             General Journal
                         </NavLink>
 
-                        <NavLink href="/reports/general-ledger" Match="NavLinkMatch.All" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/general-ledger" Match="NavLinkMatch.All"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             GL (Permanent Accounts)
                         </NavLink>
 
-                        <NavLink href="/reports/general-ledger/true" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/general-ledger/true"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             GL (Temporary Accounts)
                         </NavLink>
 
-                        <NavLink href="/reports/trial-balance" Match="NavLinkMatch.All" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/trial-balance" Match="NavLinkMatch.All"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Trial Balance
                         </NavLink>
 
-                        <NavLink href="/reports/adjusting-journal" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/adjusting-journal"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Adjusting Journal
                         </NavLink>
 
-                        <NavLink href="/reports/trial-balance/true" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/trial-balance/true"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Adjusted Trial Balance
                         </NavLink>
 
-                        <NavLink href="/reports/worksheet" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/worksheet"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Worksheet
                         </NavLink>
 
-                        <NavLink href="/reports/income-statement" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/income-statement"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Income Statement
                         </NavLink>
 
-                        <NavLink href="/reports/retained-earnings" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/retained-earnings"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Retained Earnings
                         </NavLink>
 
-                        <NavLink href="/reports/statement-of-financial-position" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/statement-of-financial-position"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Financial Position
                         </NavLink>
 
-                        <NavLink href="/reports/closing-journal" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/closing-journal"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Closing Journal
                         </NavLink>
 
-                        <NavLink href="/reports/post-closing-trial-balance" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/post-closing-trial-balance"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Post-Closing TB
                         </NavLink>
 
-                        <NavLink href="/reports/cash-flow" class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
+                        <NavLink href="/reports/cash-flow"
+                                 class="list-group-item list-group-item-action py-2 px-3 rounded mb-1" @onclick="CloseFlyout">
                             Cash Flow
                         </NavLink>
 
@@ -208,12 +209,13 @@
     .sidebar-icons {
         width: 65px;
         height: 100vh;
-        background-color: #1a1625; /* Warna ungu gelap asli */
+        background-color: #1a1625;
+        /* Warna ungu gelap asli */
         
         /* BORDER NEON PUTIH MENGELILINGI KOTAK IKON */
         border: 2px solid #ffffff;
         border-radius: 8px;
-        box-shadow: 
+        box-shadow:
             0 0 5px #ffffff,
             0 0 15px #ffffff,
             0 0 30px #ffffff;
@@ -231,7 +233,7 @@
         /* BORDER NEON PUTIH UNTUK PANEL FLYOUT */
         border: 2px solid #ffffff;
         border-radius: 8px;
-        box-shadow: 
+        box-shadow:
             0 0 5px #ffffff,
             0 0 12px rgba(255, 255, 255, 0.6);
     }
@@ -247,7 +249,7 @@
         transition: all 0.2s ease-in-out;
     }
 
-    .icon-btn:hover, 
+    .icon-btn:hover,
     .icon-btn.active {
         color: #ffffff;
         background-color: rgba(255, 255, 255, 0.15);

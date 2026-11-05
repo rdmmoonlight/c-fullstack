@@ -1,10 +1,17 @@
 @page "/chart-of-accounts"
-@namespace AumoFinance.Components.Pages.ChartOfAccounts
 @rendermode InteractiveServer
 @attribute [Authorize]
 
-@using AumoFinance.Services
-@using AumoFinance.Models
+@using System.Globalization
+@using System.Security.Claims
+@using global::AumoBackend.Models
+@using global::AumoBackend.DTOs
+@using global::AumoBackend.Services.ChartOfAccounts
+
+@inject IChartOfAccountsService AccountService
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
 
 <PageTitle>Chart of Accounts</PageTitle>
 
@@ -12,11 +19,14 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-body-emphasis mb-1"><i class="bi bi-diagram-3 me-2 text-warning"></i> Chart of Accounts</h2>
+            <h2 class="fw-bold text-body-emphasis mb-1">
+                <i class="bi bi-diagram-3 me-2 text-warning"></i> Chart of Accounts
+            </h2>
             <p class="text-secondary mb-0">Master list of financial accounts (Automatically sorted by reference).</p>
         </div>
         <div>
-            <button class="btn btn-warning fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+            <button class="btn btn-warning fw-semibold shadow-sm" data-bs-toggle="modal"
+                    data-bs-target="#addAccountModal">
                 <i class="bi bi-plus-lg me-1"></i> New Account
             </button>
         </div>
@@ -73,7 +83,8 @@
                         {
                             <tr>
                                 <td colspan="7" class="text-center py-4 text-secondary">
-                                    <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading account data...
+                                    <div class="spinner-border spinner-border-sm me-2" role="status"></div> Loading account
+                                    data...
                                 </td>
                             </tr>
                         }
@@ -110,7 +121,8 @@
                                                     @onclick="() => OpenEditModal(account)">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <a href="@GetLedgerUrl(account)" class="btn btn-sm btn-outline-info" title="View General Ledger">
+                                            <a href="@GetLedgerUrl(account)" class="btn btn-sm btn-outline-info"
+                                               title="View General Ledger">
                                                 <i class="bi bi-journal-text"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-danger" title="Delete Account"
@@ -143,11 +155,12 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold text-body-emphasis"><i class="bi bi-plus-circle me-2 text-warning"></i> Add New Account</h5>
+                <h5 class="modal-title fw-bold text-body-emphasis">
+                    <i class="bi bi-plus-circle me-2 text-warning"></i> Add New Account
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <EditForm Model="newAccount" OnValidSubmit="HandleCreate">
-                <DataAnnotationsValidator />
+            <EditForm Model="newAccount" OnSubmit="HandleCreate">
                 <div class="modal-body p-4">
                     @if (createError != null)
                     {
@@ -168,22 +181,12 @@
                         <label class="form-label fw-semibold small">Reference Number (Account Code)</label>
                         <InputNumber class="form-control" @bind-Value="newAccount.ReferenceNumber"
                                      disabled="@(string.IsNullOrEmpty(newAccount.Type))" />
-                        @if (!string.IsNullOrEmpty(newAccount.Type))
-                        {
-                            <div class="form-text text-primary">
-                                <i class="bi bi-info-circle"></i> Valid range for this category:
-                                <strong>@AccountClassification.ValidRangeStart(newAccount.Type) - @AccountClassification.ValidRangeEnd(newAccount.Type)</strong>.
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="form-text text-secondary">Please select an account category to see the valid numbering range.</div>
-                        }
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Account Name</label>
-                        <InputText class="form-control" placeholder="e.g. Rent Expense" @bind-Value="newAccount.AccountName" />
+                        <InputText class="form-control" placeholder="e.g. Rent Expense"
+                                   @bind-Value="newAccount.AccountName" />
                     </div>
 
                     <div class="mb-3">
@@ -210,11 +213,12 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold text-body-emphasis"><i class="bi bi-pencil-square me-2 text-warning"></i> Edit Account</h5>
+                <h5 class="modal-title fw-bold text-body-emphasis">
+                    <i class="bi bi-pencil-square me-2 text-warning"></i> Edit Account
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <EditForm Model="editAccount" OnValidSubmit="HandleEdit">
-                <DataAnnotationsValidator />
+            <EditForm Model="editAccount" OnSubmit="HandleEdit">
                 <div class="modal-body p-4">
                     @if (editError != null)
                     {
@@ -234,13 +238,6 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">Reference Number (Account Code)</label>
                         <InputNumber class="form-control" @bind-Value="editAccount.ReferenceNumber" />
-                        @if (!string.IsNullOrEmpty(editAccount.Type))
-                        {
-                            <div class="form-text text-primary">
-                                <i class="bi bi-info-circle"></i> Valid range for this category:
-                                <strong>@AccountClassification.ValidRangeStart(editAccount.Type) - @AccountClassification.ValidRangeEnd(editAccount.Type)</strong>.
-                            </div>
-                        }
                     </div>
 
                     <div class="mb-3">
@@ -271,3 +268,163 @@
         </div>
     </div>
 </div>
+
+@code {
+    private Guid UserId;
+    private static readonly CultureInfo CultureId = new("id-ID");
+
+    private static readonly string[] AccountTypes =
+    {
+        "Assets", "Liabilities", "Equity", "OperatingIncome",
+        "OperatingExpenses", "OtherIncome", "OtherExpenses"
+    };
+
+    private List<ChartOfAccount> accounts = new();
+    private string? successMessage;
+    private string? errorMessage;
+    private string searchText = string.Empty;
+    private string categoryFilter = string.Empty;
+
+    private ChartOfAccount newAccount = new() { Role = "Default" };
+    private ChartOfAccount editAccount = new();
+    private string? createError;
+    private string? editError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
+            {
+                UserId = parsedId;
+                await LoadAccountsAsync();
+                return;
+            }
+        }
+
+        Nav.NavigateTo("/Account/Login", true);
+    }
+
+    private async Task LoadAccountsAsync()
+    {
+        if (UserId == Guid.Empty) return;
+        var response = await AccountService.GetAccountsAsync(UserId, null, null);
+        accounts = response.Accounts.Select(account => new ChartOfAccount
+        {
+            Id = account.Id,
+            ReferenceNumber = account.ReferenceNumber,
+            AccountName = account.AccountName,
+            Type = account.Type,
+            Role = account.Role,
+            IsActive = account.IsActive,
+            Balance = account.Balance,
+            UserId = this.UserId
+        }).ToList();
+    }
+
+    private IEnumerable<ChartOfAccount> FilteredAccounts => accounts.Where(a =>
+        (string.IsNullOrWhiteSpace(searchText)
+            || a.AccountName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+            || a.ReferenceNumber.ToString().Contains(searchText))
+        && (string.IsNullOrWhiteSpace(categoryFilter) || a.Type == categoryFilter));
+
+    private static string FormatCategoryLabel(string type) => type switch
+    {
+        "Assets" => "Assets (100 - 199)",
+        "Liabilities" => "Liabilities (200 - 299)",
+        "Equity" => "Equity (300 - 399)",
+        "OperatingIncome" => "Operating Income (400 - 499)",
+        "OperatingExpenses" => "Operating Expenses (500 - 599)",
+        "OtherIncome" => "Other Income (600 - 799)",
+        "OtherExpenses" => "Other Expenses (800 - 999)",
+        _ => type
+    };
+
+    private string GetLedgerUrl(ChartOfAccount account)
+    {
+        return $"/reports/general-ledger#account-{account.Id}";
+    }
+
+    private async Task HandleCreate()
+    {
+        createError = null;
+
+        var request = new CreateAccountRequestDto
+        {
+            ReferenceNumber = newAccount.ReferenceNumber,
+            AccountName = newAccount.AccountName,
+            Type = newAccount.Type,
+            Role = newAccount.Role
+        };
+        var result = await AccountService.CreateAccountAsync(UserId, request);
+        if (!result.IsSuccess)
+        {
+            createError = result.Message;
+            return;
+        }
+
+        successMessage = $"Account '{newAccount.AccountName}' successfully created.";
+        await JS.InvokeVoidAsync("aumoModal.hide", "addAccountModal");
+        newAccount = new ChartOfAccount { Role = "Default" };
+        await LoadAccountsAsync();
+    }
+
+    private void OpenEditModal(ChartOfAccount account)
+    {
+        editError = null;
+        editAccount = new ChartOfAccount
+        {
+            Id = account.Id,
+            ReferenceNumber = account.ReferenceNumber,
+            AccountName = account.AccountName,
+            Type = account.Type,
+            Role = account.Role,
+            IsActive = account.IsActive,
+            UserId = account.UserId
+        };
+    }
+
+    private async Task HandleEdit()
+    {
+        editError = null;
+
+        var request = new UpdateAccountRequestDto
+        {
+            ReferenceNumber = editAccount.ReferenceNumber,
+            AccountName = editAccount.AccountName,
+            Type = editAccount.Type,
+            Role = editAccount.Role
+        };
+        var result = await AccountService.UpdateAccountAsync(UserId, editAccount.Id, request);
+        if (!result.IsSuccess)
+        {
+            editError = result.Message;
+            return;
+        }
+
+        successMessage = $"Account '{editAccount.AccountName}' successfully updated.";
+        await JS.InvokeVoidAsync("aumoModal.hide", "editAccountModal");
+        await LoadAccountsAsync();
+    }
+
+    private async Task ConfirmAndDelete(ChartOfAccount account)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm",
+            $"Delete account \"{account.AccountName}\"? This action cannot be undone.");
+        if (!confirmed) return;
+
+        var result = await AccountService.DeleteAccountAsync(UserId, account.Id);
+        if (!result.IsSuccess)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+
+        successMessage = $"Account '{account.AccountName}' successfully deleted.";
+        await LoadAccountsAsync();
+    }
+}

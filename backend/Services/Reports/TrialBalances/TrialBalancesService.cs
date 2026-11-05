@@ -344,7 +344,7 @@ public class TrialBalancesService : ITrialBalancesService
         => !string.IsNullOrEmpty(type) && AccountClassificationHelper.IsTemporary(type);
 
     private static string Truncate(string? value, int max)
-        {
+    {
         value ??= string.Empty;
         return value.Length <= max ? value : value[..max];
     }

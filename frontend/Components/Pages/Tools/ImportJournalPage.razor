@@ -1,7 +1,20 @@
 @page "/tools/import-journal"
-@namespace AumoFinance.Components.Pages.Tools
+
 @rendermode InteractiveServer
 @attribute [Authorize]
+
+@using System.Globalization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using AumoBackend.Services.Tools
+@using AumoBackend.DTOs
+
+@inject IToolsService ImportService
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
 
 <PageTitle>Import Journal Entries</PageTitle>
 
@@ -48,8 +61,11 @@
         <div class="card-body p-4">
             <div class="row align-items-center mb-3">
                 <div class="col-12 col-md-8">
-                    <h5 class="fw-bold mb-1"><i class="bi bi-cloud-arrow-up me-2 text-primary"></i> Select Excel File</h5>
-                    <p class="text-secondary small mb-0">Select an <code>.xlsx</code> file, then click <strong>"Preview"</strong> to inspect entries inside the pop-up modal.</p>
+                    <h5 class="fw-bold mb-1"><i class="bi bi-cloud-arrow-up me-2 text-primary"></i> Select Excel File
+                    </h5>
+                    <p class="text-secondary small mb-0">Select an <code>.xlsx</code> file, then click
+                        <strong>"Preview"</strong> to inspect entries inside the pop-up modal.
+                    </p>
                 </div>
                 <div class="col-12 col-md-4 text-md-end mt-2 mt-md-0">
                     <a href="/api/Tools/DownloadJournalTemplate" class="btn btn-outline-success btn-sm rounded-3">
@@ -60,7 +76,8 @@
 
             <div class="row g-3">
                 <div class="col-12 col-md-9">
-                    <InputFile class="form-control form-control-lg rounded-3" OnChange="OnFileSelected" accept=".xlsx" />
+                    <InputFile class="form-control form-control-lg rounded-3" OnChange="OnFileSelected"
+                               accept=".xlsx" />
                 </div>
                 <div class="col-12 col-md-3">
                     <button type="button" class="btn btn-primary btn-lg w-100 fw-semibold rounded-3 shadow-sm"
@@ -82,7 +99,8 @@
 </div>
 
 <!-- PREVIEW MODAL -->
-<div class="modal fade" id="indexPreviewModal" tabindex="-1" aria-labelledby="indexPreviewModalLabel" aria-hidden="true">
+<div class="modal fade" id="indexPreviewModal" tabindex="-1" aria-labelledby="indexPreviewModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content rounded-4 border-0 shadow">
             <div class="modal-header border-bottom px-4 py-3">
@@ -91,9 +109,9 @@
                         <i class="bi bi-file-earmark-check me-2 text-success"></i> Journal Entries Preview
                     </h5>
                     <small class="text-secondary">
-                        @if (parseResult != null)
+                        @if (parseResult is not null)
                         {
-                            @($"Found {parseResult.TotalTransactionsRead} transactions with {parseResult.TotalLinesRead} row entries.")
+                            @:Review the parsed transactions below before importing.
                         }
                         else
                         {
@@ -105,21 +123,9 @@
             </div>
 
             <div class="modal-body p-4">
-                @if (parseResult != null)
+                @if (parseResult is not null)
                 {
-                    @if (parseResult.Warnings.Any())
-                    {
-                        <div class="alert alert-warning rounded-3 mb-4">
-                            <ul class="small mb-0 ps-3">
-                                @foreach (var w in parseResult.Warnings)
-                                {
-                                    <li>@w</li>
-                                }
-                            </ul>
-                        </div>
-                    }
-
-                    @foreach (var tx in parseResult.Transactions)
+                    @foreach (var tx in parseResult.JournalEntries)
                     {
                         <div class="card border mb-3 rounded-3 shadow-sm">
                             <div class="card-header bg-body d-flex justify-content-between align-items-center py-2 px-3">
@@ -148,44 +154,183 @@
                                                     @line.AccountName
                                                     @if (line.IsNewAccount)
                                                     {
-                                                        <span class="badge bg-info-subtle text-info border border-info-subtle ms-1">New COA</span>
-                                                    }
-                                                </td>
-                                                <td class="text-secondary">@line.Description</td>
-                                                <td class="text-end fw-semibold text-success">@(line.Debit.HasValue ? $"Rp {line.Debit.Value.ToString("N0", Idr)}" : "-")</td>
-                                                <td class="text-end fw-semibold text-danger">@(line.Credit.HasValue ? $"Rp {line.Credit.Value.ToString("N0", Idr)}" : "-")</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                    <tfoot class="table-group-divider fw-bold">
-                                        <tr>
-                                            <td colspan="4" class="text-end">Total Amount:</td>
-                                            <td class="text-end text-success">Rp @tx.Lines.Sum(l => l.Debit ?? 0).ToString("N0", Idr)</td>
-                                            <td class="text-end text-danger">Rp @tx.Lines.Sum(l => l.Credit ?? 0).ToString("N0", Idr)</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
+                                                        <span class="badge bg-info-subtle text-info border border-info-subtle ms-1">New
+                                                            COA</span>
+                                                        }
+                                                    </td>
+                                                    <td class="text-secondary">@line.Description</td>
+                                                    <td class="text-end fw-semibold text-success">@(line.Debit.HasValue ? $"Rp                                      {line.Debit.Value.ToString("N0", Idr)}" : "-")</td>
+                                                    <td class="text-end fw-semibold text-danger">@(line.Credit.HasValue ? $"Rp                                        {line.Credit.Value.ToString("N0", Idr)}" : "-")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot class="table-group-divider fw-bold">
+                                            <tr>
+                                                <td colspan="4" class="text-end">Total Amount:</td>
+                                                <td class="text-end text-success">Rp @tx.Lines.Sum(l => l.Debit ?? 0).ToString("N0",
+                                                                                                                                                                                                                                                                                                                Idr)</td>
+                                                    <td class="text-end text-danger">Rp @tx.Lines.Sum(l => l.Credit ?? 0).ToString("N0",
+                                                                                                                                                                                                                                                                                                                                    Idr)</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                }
+                            }
                         </div>
-                    }
-                }
+
+                        <div class="modal-footer border-top px-4 py-3">
+                            <button type="button" class="btn btn-outline-secondary rounded-3"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success rounded-3 px-4 fw-semibold shadow-sm"
+                                    disabled="@(parseResult is null || !parseResult.JournalEntries.Any() || isBusy)"
+                                    @onclick="HandleConfirmImport">
+                                @if (isBusy)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check2-all me-1"></i>
+                                }
+                                Import Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="modal-footer border-top px-4 py-3">
-                <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success rounded-3 px-4 fw-semibold shadow-sm"
-                        disabled="@(parseResult == null || !parseResult.Transactions.Any() || isBusy)" @onclick="HandleConfirmImport">
-                    @if (isBusy)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                    }
-                    else
-                    {
-                        <i class="bi bi-check2-all me-1"></i>
-                    }
-                    Import Data
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+@code {
+    private static readonly CultureInfo Idr = new("id-ID");
+    private Guid UserId { get; set; }
+
+    private const long MaxFileSizeBytes = 20 * 1024 * 1024; // 20 MB
+
+    private IBrowserFile? selectedFile;
+    private JournalImportRequestDto? parseResult;
+    private string? successMessage;
+    private string? errorMessage;
+    private bool isBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
+            {
+                UserId = parsedId;
+                return;
+            }
+        }
+
+        Nav.NavigateTo("/auth/login", true);
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        parseResult = null;
+        errorMessage = null;
+    }
+
+    private async Task HandlePreview()
+    {
+        if (selectedFile == null || UserId == Guid.Empty)
+        {
+            errorMessage = "Please select an Excel file first.";
+            return;
+        }
+
+        errorMessage = null;
+        successMessage = null;
+        isBusy = true;
+
+        try
+        {
+            using var memoryStream = new MemoryStream();
+            await using (var fileStream = selectedFile.OpenReadStream(MaxFileSizeBytes))
+            {
+                await fileStream.CopyToAsync(memoryStream);
+            }
+
+            memoryStream.Position = 0;
+
+            if (memoryStream.Length == 0)
+            {
+                errorMessage = "The uploaded file is empty.";
+                return;
+            }
+
+            var result = await ImportService.ParseJournalExcelAsync(UserId, memoryStream);
+            if (!result.IsSuccess)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            if (result.JournalEntries == null || !result.JournalEntries.Any())
+            {
+                errorMessage = "No valid transactions found in 'GJ' or 'AJ' sheets. Please verify your template format.";
+                return;
+            }
+
+            parseResult = result;
+            StateHasChanged();
+
+            await JS.InvokeVoidAsync("aumoModal.show", "indexPreviewModal");
+        }
+        catch (JSException jsEx)
+        {
+            errorMessage = $"JavaScript Interop error: {jsEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred while parsing the file: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleConfirmImport()
+    {
+        if (parseResult is null || !parseResult.JournalEntries.Any() || UserId == Guid.Empty)
+        {
+            errorMessage = "No valid transactions to import.";
+            return;
+        }
+
+        isBusy = true;
+        try
+        {
+            var result = await ImportService.ImportJournalEntriesAsync(UserId, parseResult);
+            if (!result.IsSuccess)
+            {
+                errorMessage = result.Message;
+                return;
+            }
+
+            successMessage = result.Message;
+            await JS.InvokeVoidAsync("aumoModal.hide", "indexPreviewModal");
+
+            parseResult = null;
+            selectedFile = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to save entries: {ex.Message}";
+        }
+        finally
+        {
+            isBusy = false;
+            StateHasChanged();
+        }
+    }
+}

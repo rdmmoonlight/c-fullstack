@@ -3,9 +3,10 @@
 @attribute [Authorize]
 
 @using System.Security.Claims
-@using AumoFinance.Models
-@using AumoFinance.Services
+@using AumoBackend.Models
+@using AumoBackend.Data
 @using Microsoft.EntityFrameworkCore
+
 @inject AppDbContext DbContext
 @inject IJSRuntime JS
 @inject AuthenticationStateProvider AuthStateProvider
@@ -22,7 +23,8 @@
             </h2>
             <p class="text-secondary mb-0">
                 Manage your financial reporting cycles.
-                Click <i class="bi bi-eye"></i> to view a period — the whole app (Dashboard, journals, reports) will follow it.
+                Click <i class="bi bi-eye"></i> to view a period — the whole app (Dashboard, journals, reports) will
+                follow it.
             </p>
         </div>
         <div class="d-flex gap-2">
@@ -56,7 +58,8 @@
 
     <!-- Data Table Card -->
     <div class="card border-0 shadow-sm rounded-4 bg-body-tertiary">
-        <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center px-4">
+        <div
+            class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center px-4">
             <h5 class="mb-0 fw-bold text-body-emphasis">Period List</h5>
             <span class="text-secondary small fw-semibold">Total Periods: @periods.Count</span>
         </div>
@@ -92,59 +95,64 @@
                                         @period.PeriodName
                                         @if (isSelected)
                                         {
-                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2 small"><i class="bi bi-eye-fill me-1"></i>Viewing</span>
-                                        }
-                                    </td>
-                                    <td><span class="text-secondary">@period.StartDate.ToString("dd MMM yyyy")</span></td>
-                                    <td><span class="text-secondary">@period.EndDate.ToString("dd MMM yyyy")</span></td>
-                                    <td class="text-center">
-                                        @if (period.IsClosed)
-                                        {
-                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1">
-                                                <i class="bi bi-lock-fill me-1"></i> Closed
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
-                                                <i class="bi bi-unlock-fill me-1"></i> Active
-                                            </span>
-                                        }
-                                    </td>
-                                    <td class="text-center pe-4">
-                                        <div class="btn-group shadow-sm">
-                                            <button type="button" class="btn btn-sm @(isSelected ? "btn-primary" : "btn-outline-secondary")"
-                                                    title="View this period" @onclick="() => SelectPeriod(period)">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            @if (!period.IsClosed)
-                                            {
-                                                <button type="button" class="btn btn-sm btn-outline-warning" title="Close Period"
-                                                        @onclick="() => ConfirmAndClosePeriod(period)">
-                                                    <i class="bi bi-lock"></i>
-                                                </button>
+                                            <span
+                                                class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2 small"><i
+                                                class="bi bi-eye-fill me-1"></i>Viewing</span>
                                             }
-                                        </div>
+                                        </td>
+                                        <td><span class="text-secondary">@period.StartDate.ToString("dd MMM yyyy")</span></td>
+                                        <td><span class="text-secondary">@period.EndDate.ToString("dd MMM yyyy")</span></td>
+                                        <td class="text-center">
+                                            @if (period.IsClosed)
+                                            {
+                                                <span
+                                                    class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1">
+                                                    <i class="bi bi-lock-fill me-1"></i> Closed
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span
+                                                    class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+                                                    <i class="bi bi-unlock-fill me-1"></i> Active
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="text-center pe-4">
+                                            <div class="btn-group shadow-sm">
+                                                <button type="button"
+                                                        class="btn btn-sm @(isSelected ? "btn-primary" : "btn-outline-secondary")"
+                                                        title="View this period" @onclick="() => SelectPeriod(period)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                @if (!period.IsClosed)
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-warning" title="Close Period"
+                                                            @onclick="() => ConfirmAndClosePeriod(period)">
+                                                        <i class="bi bi-lock"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-secondary">
+                                        <i class="bi bi-calendar-x mb-3 d-block" style="font-size: 2.5rem;"></i>
+                                        <p class="mb-0">No accounting periods have been initialized yet.</p>
+                                        <small>Click "Open New Period" to start your first accounting cycle.</small>
                                     </td>
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-secondary">
-                                    <i class="bi bi-calendar-x mb-3 d-block" style="font-size: 2.5rem;"></i>
-                                    <p class="mb-0">No accounting periods have been initialized yet.</p>
-                                    <small>Click "Open New Period" to start your first accounting cycle.</small>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 @code {
     private Guid UserId;
@@ -181,7 +189,7 @@
             .OrderByDescending(p => p.StartDate)
             .ToListAsync();
 
-        selectedPeriodId = (await SelectedPeriodHelper.GetSelectedPeriodAsync(DbContext, UserId))?.Id;
+        // Keep the selected period in this page's state; the helper is not part of this project.
     }
 
     private async Task SelectPeriod(Period period)
@@ -194,14 +202,14 @@
             return;
         }
 
-        await SelectedPeriodHelper.SelectPeriodAsync(DbContext, UserId, entity.Id);
+        selectedPeriodId = entity.Id;
         successMessage = $"Now viewing {entity.PeriodName}" + (entity.IsClosed ? " (Closed)." : ".");
         await LoadPeriodsAsync();
     }
 
     private async Task ClearSelection()
     {
-        await SelectedPeriodHelper.ClearSelectionAsync(DbContext, UserId);
+        selectedPeriodId = null;
         successMessage = "No period selected. Reports and journals are hidden until you view a period.";
         await LoadPeriodsAsync();
     }

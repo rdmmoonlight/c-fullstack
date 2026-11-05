@@ -5,8 +5,9 @@
 @using System.Security.Claims
 @using System.Globalization
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.EntityFrameworkCore
-@using AumoFinance.Models
+@using AumoBackend.Data
+@using AumoBackend.Models
+
 @inject AppDbContext DbContext
 @inject AuthenticationStateProvider AuthStateProvider
 
@@ -31,7 +32,8 @@
                     <i class="bi bi-bank me-2 text-info"></i>Statement of Financial Position
                 </h2>
                 <p class="text-muted mb-0">
-                    In accordance with IAS 1, as of <strong>@vm.AsOfDate.ToString("MMMM dd, yyyy")</strong>. Retained earnings reflect the ending balance from the Retained Earnings Statement.
+                    In accordance with IAS 1, as of <strong>@vm.AsOfDate.ToString("MMMM dd, yyyy")</strong>. Retained
+                    earnings reflect the ending balance from the Retained Earnings Statement.
                 </p>
             </div>
             <div>
@@ -143,7 +145,8 @@
         </div>
 
         <!-- Balance Indicator Alert -->
-        <div class="alert @(vm.IsBalanced ? "alert-success" : "alert-danger") bg-opacity-10 text-white border-@(vm.IsBalanced ? "success" : "danger") mt-4 mb-0 py-2 small d-flex align-items-center shadow-sm">
+        <div
+            class="alert @(vm.IsBalanced ? "alert-success" : "alert-danger") bg-opacity-10 text-white border-@(vm.IsBalanced ? "success" : "danger") mt-4 mb-0 py-2 small d-flex align-items-center shadow-sm">
             @if (vm.IsBalanced)
             {
                 <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
@@ -201,12 +204,13 @@
         vm = await BuildSofpAsync(DbContext, UserId, period, isPostClosing: false);
     }
 
-    public static async Task<StatementOfFinancialPositionViewModel> BuildSofpAsync(AppDbContext db, Guid userId, Period period, bool isPostClosing)
+    public static async Task<StatementOfFinancialPositionViewModel> BuildSofpAsync(AppDbContext db, Guid userId, Period
+period, bool isPostClosing)
     {
         var rows = await TrialBalancePage.BuildTrialBalanceRowsAsync(db, userId, period, includeAdjusting: true);
         var re = await RetainedEarningsPage.BuildRetainedEarningsAsync(db, userId, period);
 
-        FinancialPositionLine ToLine(TrialBalanceRow r) => new()
+        FinancialPositionLine ToLine(TrialBalancesRow r) => new()
         {
             ReferenceNumber = r.ReferenceNumber,
             AccountName = r.AccountName,
@@ -219,7 +223,8 @@
             IsPostClosing = isPostClosing,
             Assets = rows.Where(r => r.Type == "Assets").Select(ToLine).ToList(),
             Liabilities = rows.Where(r => r.Type == "Liabilities").Select(ToLine).ToList(),
-            EquityExcludingRetainedEarnings = rows.Where(r => r.Type == "Equity" && r.Role != "RetainedEarnings").Select(ToLine).ToList(),
+            EquityExcludingRetainedEarnings = rows.Where(r => r.Type == "Equity" && r.Role !=
+"RetainedEarnings").Select(ToLine).ToList(),
             RetainedEarningsEnding = re.EndingBalance
         };
     }

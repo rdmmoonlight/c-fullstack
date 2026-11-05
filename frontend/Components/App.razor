@@ -13,7 +13,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
 
     <!-- Aumo Theme Styles -->
     <link rel="stylesheet" href="/css/guardian.css" />
@@ -23,10 +25,10 @@
 
     <!-- Instant Theme Loader (Mencegah Layar Kedip Saat Load) -->
     <script>
-        (function() {
-            const savedTheme = localStorage.getItem('aumo_theme') || 'dark';
-            document.documentElement.setAttribute('data-bs-theme', savedTheme);
-        })();
+            (function () {
+                const savedTheme = localStorage.getItem('aumo_theme') || 'dark';
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            })();
     </script>
 
     <!-- Aktifkan Interaktivitas untuk Meta Head -->
@@ -52,18 +54,14 @@
 
     <!-- Global Theme Controller Function (Fallback) -->
     <script>
-        window.setAppTheme = function(themeName) {
-            document.documentElement.setAttribute('data-bs-theme', themeName);
-            localStorage.setItem('aumo_theme', themeName);
-        };
+            window.setAppTheme = function (themeName) {
+                document.documentElement.setAttribute('data-bs-theme', themeName);
+                localStorage.setItem('aumo_theme', themeName);
+            };
     </script>
 
     <!-- Framework Blazor Core -->
     <script src="_framework/blazor.web.js"></script>
-
-    <!-- Custom Scripts Tambahan -->
-    <script src="js/quran-banner.js"></script>
-    <script src="js/guardian.js"></script>
 </body>
 
 </html>

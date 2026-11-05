@@ -1,5 +1,4 @@
 using AumoBackend.Data;
-using AumoBackend.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 

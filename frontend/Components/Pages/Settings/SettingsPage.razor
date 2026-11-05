@@ -1,5 +1,17 @@
 @page "/settings"
+
 @rendermode InteractiveServer
+@attribute [Authorize]
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JS
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Settings</PageTitle>
 
 <h3>Settings</h3>
 
@@ -30,39 +42,13 @@
                     <dt class="col-sm-4">Email</dt>
                     <dd class="col-sm-8">@UserEmail</dd>
 
-                    <dt class="col-sm-4">Email Status</dt>
-                    <dd class="col-sm-8">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge @(IsEmailConfirmed ? "bg-success" : "bg-warning text-dark")">
-                                @(IsEmailConfirmed ? "Confirmed" : "Not Confirmed")
-                            </span>
-
-                            @if (!IsEmailConfirmed)
-                            {
-                                <button class="btn btn-sm btn-outline-primary py-0 px-2" 
-                                        @onclick="ResendVerificationEmail" 
-                                        disabled="@isSendingEmail">
-                                    @if (isSendingEmail)
-                                    {
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                        <span>Sending...</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Resend Verification</span>
-                                    }
-                                </button>
-                            }
-                        </div>
-                    </dd>
-
                     <dt class="col-sm-4">Phone</dt>
-                    <dd class="col-sm-8">@(CurrentUser?.PhoneNumber ?? "N/A")</dd>
+                    <dd class="col-sm-8">@(UserProfile?.PhoneNumber ?? "N/A")</dd>
 
                     <dt class="col-sm-4">2FA Status</dt>
                     <dd class="col-sm-8">
-                        <span class="badge @(CurrentUser?.TwoFactorEnabled == true ? "bg-success" : "bg-secondary")">
-                            @(CurrentUser?.TwoFactorEnabled == true ? "Enabled" : "Disabled")
+                        <span class="badge @(UserProfile?.TwoFactorEnabled == true ? "bg-success" : "bg-secondary")">
+                            @(UserProfile?.TwoFactorEnabled == true ? "Enabled" : "Disabled")
                         </span>
                     </dd>
                 </dl>
@@ -80,8 +66,8 @@
         <div class="mb-3">
             <label class="form-label d-block">Theme</label>
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="themeToggle"
-                       checked="@isDarkMode" @onchange="OnThemeChanged" />
+                <input class="form-check-input" type="checkbox" id="themeToggle" checked="@isDarkMode"
+                       @onchange="OnThemeChanged" />
                 <label class="form-check-label" for="themeToggle">
                     @(isDarkMode ? "🌙 Dark Mode" : "☀️ Light Mode")
                 </label>
@@ -91,8 +77,8 @@
         <div class="mb-3">
             <label class="form-label d-block">System Alerts</label>
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="alertsToggle"
-                       checked="@enableSystemAlerts" @onchange="OnSystemAlertsChanged" />
+                <input class="form-check-input" type="checkbox" id="alertsToggle" checked="@enableSystemAlerts"
+                       @onchange="OnSystemAlertsChanged" />
                 <label class="form-check-label" for="alertsToggle">
                     @(enableSystemAlerts ? "Enabled" : "Disabled")
                 </label>
@@ -113,3 +99,113 @@
         </div>
     </div>
 </div>
+
+@code {
+    private Guid UserId { get; set; }
+    private UserProfileViewModel? UserProfile { get; set; }
+
+    private sealed class UserProfileViewModel
+    {
+        public string? Email { get; init; }
+        public string? FullName { get; init; }
+        public string? UserName { get; init; }
+        public bool EmailConfirmed { get; init; }
+        public string? PhoneNumber { get; init; }
+        public bool TwoFactorEnabled { get; init; }
+    }
+
+    private bool IsEmailConfirmed => UserProfile?.EmailConfirmed ?? false;
+    private string UserEmail => UserProfile?.Email ?? "N/A";
+    private string UserFullName => UserProfile?.FullName ?? UserProfile?.UserName ?? "Unknown";
+    private string UserName => UserProfile?.UserName ?? "Unknown";
+
+    private bool isDarkMode = true;
+    private bool enableSystemAlerts = true;
+    private bool isSendingEmail = false;
+
+    private string toastMessage = "";
+    private string? statusAlertMessage;
+    private string statusAlertClass = "alert-info";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var parsedId))
+            {
+                UserId = parsedId;
+                UserProfile = new UserProfileViewModel
+                {
+                    Email = user.FindFirst(ClaimTypes.Email)?.Value,
+                    FullName = user.FindFirst(ClaimTypes.Name)?.Value,
+                    UserName = user.Identity?.Name
+                };
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var savedTheme = await JS.InvokeAsync<string?>("localStorage.getItem", "aumo_theme");
+                isDarkMode = string.IsNullOrEmpty(savedTheme) || savedTheme == "dark";
+                StateHasChanged();
+            }
+            catch
+            {
+                isDarkMode = true;
+            }
+        }
+    }
+
+    private async Task OnThemeChanged(ChangeEventArgs e)
+    {
+        isDarkMode = e.Value is bool val ? val : Convert.ToBoolean(e.Value);
+        var selectedTheme = isDarkMode ? "dark" : "light";
+
+        try
+        {
+            await JS.InvokeVoidAsync("setAppTheme", selectedTheme);
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-bs-theme", selectedTheme);
+            await JS.InvokeVoidAsync("localStorage.setItem", "aumo_theme", selectedTheme);
+        }
+
+        await ShowNotification($"Theme updated to {selectedTheme} mode.");
+    }
+
+    private async Task OnSystemAlertsChanged(ChangeEventArgs e)
+    {
+        enableSystemAlerts = e.Value is bool val ? val : Convert.ToBoolean(e.Value);
+        var status = enableSystemAlerts ? "enabled" : "disabled";
+
+        await ShowNotification($"System alerts have been {status}.");
+    }
+
+    private async Task ShowNotification(string message, bool isError = false)
+    {
+        toastMessage = message;
+        statusAlertMessage = message;
+        statusAlertClass = isError ? "alert-danger" : "alert-success";
+
+        StateHasChanged();
+
+        try
+        {
+            await JS.InvokeVoidAsync("eval", "var el = document.getElementById('settingsToast'); if(el) { new bootstrap.Toast(el).show(); }");
+        }
+        catch
+        {
+            // Inline alert fallback
+        }
+    }
+}

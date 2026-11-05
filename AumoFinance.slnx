@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/AumoBackend.csproj" />
+  </Folder>
+  <Folder Name="/frontend/">
+    <Project Path="frontend/AumoBlazor.csproj" />
+  </Folder>
+</Solution>
