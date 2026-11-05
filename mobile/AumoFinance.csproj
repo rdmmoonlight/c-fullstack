@@ -24,10 +24,10 @@
 		     jadi tidak perlu menggagalkan build. Bisa dirapikan bertahap di kemudian hari. -->
 		<NoWarn>$(NoWarn);NU1605;CS0649;CS0169;NETSDK1202;XC0022;XC0025</NoWarn>
 
-		<ApplicationTitle>Aumo</ApplicationTitle>
+		<ApplicationTitle>Aumo Mobile (C#) </ApplicationTitle>
 		<ApplicationId>com.bnrc.aumofinance</ApplicationId>
-
-		<!-- LOCK TARGET ANDROID 9.0 (API LEVEL 28) -->
+		<ApplicationVersion>2.0.0</ApplicationVersion>
+		<ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">28.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
