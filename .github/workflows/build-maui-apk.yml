@@ -20,7 +20,7 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '8.0.x' # Menggunakan SDK .NET 8 agar kompatibel secara native dengan target net8.0-android
 
     - name: Install MAUI Android Workload
       run: |
@@ -30,12 +30,12 @@ jobs:
       run: |
         dotnet restore mobile
 
-    - name: Build Android APK (Min SDK Android 9 / API 28)
+    - name: Build Android APK (Android 9 / API 28)
       run: |
-        dotnet publish mobile -c Release -f net8.0-android --no-restore -p:AndroidPackageFormat=apk -p:SupportedOSPlatformVersion=28.0
+        dotnet publish mobile -c Release -f net8.0-android28.0 --no-restore -p:AndroidPackageFormat=apk -p:TargetPlatformVersion=28.0 -p:SupportedOSPlatformVersion=28.0
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: maui-app-release-apk
-        path: mobile/bin/Release/net8.0-android/*-Signed.apk
+        path: mobile/bin/Release/net8.0-android28.0/*-Signed.apk
