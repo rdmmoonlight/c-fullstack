@@ -1,0 +1,24 @@
+#pragma warning disable CS1591
+// <copyright file="20260806000000_RemoveMobileJournalEntries.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+#nullable disable
+
+namespace AumoBackend.Migrations
+{
+    using Microsoft.EntityFrameworkCore.Migrations;
+
+    public partial class RemoveMobileJournalEntries : Migration
+    {
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            // Karena tabel di PostgreSQL sudah di-drop/backup manual,
+            // metode Up dibiarkan kosong agar tidak error saat aplikasi dijalankan.
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+        }
+    }
+}

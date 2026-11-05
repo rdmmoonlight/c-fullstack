@@ -1,0 +1,8 @@
+rule dotnet_build
+  command = dotnet build $in -o $out --configuration Release
+  description = Building .NET Core AumoBackend: $in
+  pool = console
+
+build backend/asp-net-core/bin/Release: dotnet_build backend/asp-net-core/AumoBackend.csproj
+
+build backend_aspnet: phony backend/asp-net-core/bin/Release
