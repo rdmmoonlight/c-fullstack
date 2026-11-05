@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Reports.AdjustingJournal.AdjustingJournalPage"
+             BackgroundColor="#0A0A0A"
+             Title="Adjusting Journal">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Navigation Bar -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <Grid Grid.Row="1" RowDefinitions="Auto, Auto, *" Padding="16,10,16,0" RowSpacing="16">
+
+            <!-- Page Header & Tambah Button -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" ColumnSpacing="8" VerticalOptions="Center">
+                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <Label Text="Adjusting Journal"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           TextColor="White" />
+                    <Label Text="Jurnal penyesuaian akhir periode (akrual, deferral, depresiasi)."
+                           FontSize="12"
+                           TextColor="#D8D8D8" />
+                </VerticalStackLayout>
+
+                <Button Grid.Column="1"
+                        Text=" Tambah"
+                        Clicked="OnAddAdjustingEntryClicked"
+                        BackgroundColor="#523363"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="13"
+                        CornerRadius="10"
+                        Padding="12,0"
+                        HeightRequest="40">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="TablerIcons" Glyph="&#xea69;" Color="#FFFFFF" Size="14" />
+                    </Button.ImageSource>
+                </Button>
+            </Grid>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator Grid.Row="1"
+                               x:Name="LoadingIndicator"
+                               Color="#FFFFFF"
+                               IsRunning="True"
+                               IsVisible="True"
+                               HeightRequest="40" />
+
+            <!-- Empty state + list share the remaining space -->
+            <Grid Grid.Row="2">
+
+                <!-- Empty State View -->
+                <VerticalStackLayout x:Name="EmptyStateContainer"
+                                     Spacing="12"
+                                     HorizontalOptions="Center"
+                                     Padding="0,40"
+                                     IsVisible="False">
+                    <Label Text="&#xeaa2;" FontFamily="TablerIcons" FontSize="44" TextColor="#D8D8D8" HorizontalOptions="Center" />
+                    <Label x:Name="EmptyStateLabel"
+                           Text="Tidak ada adjusting entries pada periode ini."
+                           TextColor="#D8D8D8"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- RefreshView List -->
+                <RefreshView x:Name="AdjustingJournalRefreshView"
+                             BackgroundColor="#0A0A0A"
+                             RefreshColor="#FFFFFF"
+                             Refreshing="OnRefreshViewRefreshing">
+                    <CollectionView x:Name="AdjustingJournalCollectionView" IsGrouped="True" SelectionMode="None" Margin="0,0,0,20">
+                        <CollectionView.GroupHeaderTemplate>
+                            <DataTemplate>
+                                <Border BackgroundColor="#0A0A0A"
+                                        Stroke="#1E121F"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="10,5"
+                                        Margin="0,12,0,6">
+                                    <Label Text="{Binding GroupHeader}"
+                                           TextColor="#FFFFFF"
+                                           FontAttributes="Bold"
+                                           FontSize="13" />
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.GroupHeaderTemplate>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border BackgroundColor="#141014"
+                                        Stroke="#1E121F"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 12"
+                                        Margin="0,0,0,10"
+                                        Padding="12">
+                                    <VerticalStackLayout Spacing="10">
+
+                                        <!-- Entry Header (Waktu Input + Nomor Transaksi + Edit/Delete) -->
+                                        <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="6" VerticalOptions="Center">
+
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
+                                                <!-- Badge Tanggal + Jam Input (CreatedAt, otomatis) -->
+                                                <Border BackgroundColor="#0A0A0A" StrokeShape="RoundRectangle 6" Padding="6,3" VerticalOptions="Center">
+                                                    <Label Text="{Binding FormattedTime}" TextColor="#FFFFFF" FontSize="11" FontAttributes="Bold" />
+                                                </Border>
+
+                                                <!-- Last-edited badge (only shown if the entry has ever been edited) -->
+                                                <Border BackgroundColor="#0A0A0A" StrokeShape="RoundRectangle 6" Padding="6,3" VerticalOptions="Center" IsVisible="{Binding HasBeenEdited}">
+                                                    <Label FontSize="11" FontAttributes="Bold" TextColor="#FFFFFF">
+                                                        <Label.FormattedText>
+                                                            <FormattedString>
+                                                                <Span Text="Edited " FontAttributes="Italic" />
+                                                                <Span Text="{Binding FormattedEditTime}" />
+                                                            </FormattedString>
+                                                        </Label.FormattedText>
+                                                    </Label>
+                                                </Border>
+
+                                                <Label Text="{Binding FormattedTransactionNumber}"
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"
+                                                       TextColor="#D8D8D8"
+                                                       VerticalOptions="Center" />
+                                            </HorizontalStackLayout>
+
+                                            <!-- Edit Entry (pencil) -->
+                                            <Button Grid.Column="1"
+                                                    Text="&#xea98;"
+                                                    FontFamily="TablerIcons"
+                                                    TextColor="#FFFFFF"
+                                                    FontSize="13"
+                                                    WidthRequest="30"
+                                                    HeightRequest="30"
+                                                    Padding="0"
+                                                    CornerRadius="8"
+                                                    BackgroundColor="#1E121F"
+                                                    CommandParameter="{Binding Id}"
+                                                    Clicked="OnEditEntryClicked" />
+
+                                            <!-- Delete Entry (trash) -->
+                                            <Button Grid.Column="2"
+                                                    Text="&#xeb41;"
+                                                    FontFamily="TablerIcons"
+                                                    TextColor="#FFFFFF"
+                                                    FontSize="13"
+                                                    WidthRequest="30"
+                                                    HeightRequest="30"
+                                                    Padding="0"
+                                                    CornerRadius="8"
+                                                    BackgroundColor="#D7192F"
+                                                    Clicked="OnDeleteEntryClicked" />
+                                        </Grid>
+
+                                        <!-- Divider Line -->
+                                        <BoxView HeightRequest="1" Color="#1E121F" />
+
+                                        <!-- Transaction Lines Header -->
+                                        <Grid ColumnDefinitions="1.5*, 3*, Auto, Auto" ColumnSpacing="8">
+                                            <Label Grid.Column="0" Text="Ref #" FontSize="10" FontAttributes="Bold" TextColor="#D8D8D8" />
+                                            <Label Grid.Column="1" Text="Account" FontSize="10" FontAttributes="Bold" TextColor="#D8D8D8" />
+                                            <Label Grid.Column="2" Text="Debit" FontSize="10" FontAttributes="Bold" TextColor="#D8D8D8" HorizontalTextAlignment="End" WidthRequest="95" />
+                                            <Label Grid.Column="3" Text="Credit" FontSize="10" FontAttributes="Bold" TextColor="#D8D8D8" HorizontalTextAlignment="End" WidthRequest="95" />
+                                        </Grid>
+
+                                        <!-- Lines Items Repeater -->
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Lines}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid ColumnDefinitions="1.5*, 3*, Auto, Auto" ColumnSpacing="8" Margin="0,2">
+                                                        <Label Grid.Column="0" Text="{Binding RefNumber}" FontSize="11" TextColor="#D8D8D8" VerticalOptions="Center" />
+
+                                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                                            <HorizontalStackLayout Spacing="0">
+                                                                <BoxView WidthRequest="18" Color="Transparent" IsVisible="{Binding IsCredit}" />
+                                                                <Label Text="{Binding AccountName}" FontSize="11" FontAttributes="Bold" TextColor="#FFFFFF" LineBreakMode="TailTruncation" />
+                                                            </HorizontalStackLayout>
+                                                            <Label Text="{Binding LineDescriptionDisplay}"
+                                                                   FontSize="9"
+                                                                   TextColor="#D8D8D8"
+                                                                   LineBreakMode="TailTruncation"
+                                                                   IsVisible="{Binding HasDescription}" />
+                                                        </VerticalStackLayout>
+
+                                                        <Label Grid.Column="2" Text="{Binding FormattedDebit}" FontSize="11" TextColor="#FFFFFF" HorizontalTextAlignment="End" WidthRequest="95" VerticalOptions="Center" />
+                                                        <Label Grid.Column="3" Text="{Binding FormattedCredit}" FontSize="11" TextColor="#FFFFFF" HorizontalTextAlignment="End" WidthRequest="95" VerticalOptions="Center" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </RefreshView>
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

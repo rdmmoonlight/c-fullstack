@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Reports.Worksheet.WorksheetPage"
+             BackgroundColor="#0A0A0A"
+             Title="Worksheet">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Bar Navigasi Kustom -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1" Padding="16,10,16,20">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Page Header & Action -->
+                <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="Worksheet"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label Text="Lembar kerja 10-kolom: Neraca Saldo, Penyesuaian, Saldo Disesuaikan, Laporan Laba Rugi, &amp; Neraca."
+                               FontSize="12"
+                               TextColor="#D8D8D8" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator x:Name="LoadingIndicator"
+                                   Color="#FFFFFF"
+                                   IsRunning="True"
+                                   IsVisible="True"
+                                   HeightRequest="40" />
+
+                <!-- Empty State -->
+                <VerticalStackLayout x:Name="EmptyStateContainer"
+                                     Spacing="12"
+                                     HorizontalOptions="Center"
+                                     Padding="0,40"
+                                     IsVisible="False">
+                    <Label Text="&#xeba1;"
+                           FontFamily="TablerIcons"
+                           FontSize="44"
+                           TextColor="#D8D8D8"
+                           HorizontalOptions="Center" />
+                    <Label x:Name="EmptyStateLabel"
+                           Text="Tidak ada data untuk ditampilkan pada periode ini."
+                           TextColor="#D8D8D8"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Worksheet Container (Dengan Horizontal Scroll agar tabel 10 kolom muat di HP) -->
+                <Border x:Name="WorksheetContainer"
+                        IsVisible="False"
+                        BackgroundColor="#141014"
+                        Stroke="#1E121F"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="0">
+                    <ScrollView Orientation="Horizontal">
+                        <VerticalStackLayout>
+
+                            <!-- Table Header -->
+                            <Grid ColumnDefinitions="180, 105,105, 105,105, 105,105, 105,105, 105,105"
+                                  BackgroundColor="#0A0A0A"
+                                  Padding="14,8">
+                                <Label Grid.Column="0" Text="Account" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Grid.ColumnSpan="2" Text="Trial Balance" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                                <Label Grid.Column="3" Grid.ColumnSpan="2" Text="Adjustments" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                                <Label Grid.Column="5" Grid.ColumnSpan="2" Text="Adjusted TB" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                                <Label Grid.Column="7" Grid.ColumnSpan="2" Text="Income Stmt" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                                <Label Grid.Column="9" Grid.ColumnSpan="2" Text="Balance Sheet" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                            </Grid>
+
+                            <!-- Sub-Header Dr / Cr -->
+                            <Grid ColumnDefinitions="180, 105,105, 105,105, 105,105, 105,105, 105,105"
+                                  BackgroundColor="#141014"
+                                  Padding="14,6">
+                                <Label Grid.Column="0" Text="" />
+                                <Label Grid.Column="1" Text="Dr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="2" Text="Cr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="3" Text="Dr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="4" Text="Cr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="5" Text="Dr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="6" Text="Cr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="7" Text="Dr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="8" Text="Cr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="9" Text="Dr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="10" Text="Cr" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="End" />
+                            </Grid>
+
+                            <BoxView HeightRequest="1" Color="#1E121F" />
+
+                            <!-- CollectionView Baris Data -->
+                            <CollectionView x:Name="WorksheetCollectionView" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <VerticalStackLayout>
+                                            <Grid ColumnDefinitions="180, 105,105, 105,105, 105,105, 105,105, 105,105"
+                                                  Padding="14,6"
+                                                  VerticalOptions="Center">
+
+                                                <!-- Nama & Ref Akun -->
+                                                <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                                    <Label Text="{Binding ReferenceNumber}" TextColor="#FFFFFF" FontSize="12" FontAttributes="Bold" VerticalOptions="Center" />
+                                                    <Label Text="{Binding AccountName}" TextColor="White" FontSize="13" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+
+                                                <!-- Trial Balance -->
+                                                <Label Grid.Column="1" Text="{Binding FormattedUnadjustedDebit}" TextColor="#D8D8D8" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                <Label Grid.Column="2" Text="{Binding FormattedUnadjustedCredit}" TextColor="#D8D8D8" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+
+                                                <!-- Adjustments -->
+                                                <Label Grid.Column="3" Text="{Binding FormattedAdjustmentDebit}" TextColor="#FFFFFF" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                <Label Grid.Column="4" Text="{Binding FormattedAdjustmentCredit}" TextColor="#FFFFFF" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+
+                                                <!-- Adjusted Trial Balance -->
+                                                <Label Grid.Column="5" Text="{Binding FormattedAdjustedDebit}" TextColor="#D8D8D8" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                <Label Grid.Column="6" Text="{Binding FormattedAdjustedCredit}" TextColor="#D8D8D8" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+
+                                                <!-- Income Statement -->
+                                                <Label Grid.Column="7" Text="{Binding FormattedIncomeStatementDebit}" TextColor="#4FA36A" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                <Label Grid.Column="8" Text="{Binding FormattedIncomeStatementCredit}" TextColor="#4FA36A" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+
+                                                <!-- Balance Sheet -->
+                                                <Label Grid.Column="9" Text="{Binding FormattedFinancialPositionDebit}" TextColor="#FFFFFF" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                                <Label Grid.Column="10" Text="{Binding FormattedFinancialPositionCredit}" TextColor="#FFFFFF" FontSize="13" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                            </Grid>
+                                            <BoxView HeightRequest="1" Color="#1E121F" Opacity="0.4" />
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <!-- Footer Totals -->
+                            <Grid ColumnDefinitions="180, 105,105, 105,105, 105,105, 105,105, 105,105"
+                                  BackgroundColor="#0A0A0A"
+                                  Padding="14,8">
+                                <Label Grid.Column="0" Text="Total" TextColor="White" FontSize="13" FontAttributes="Bold" VerticalOptions="Center" />
+                                <Label x:Name="TotUnadjDr" Grid.Column="1" Text="0" TextColor="#D8D8D8" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotUnadjCr" Grid.Column="2" Text="0" TextColor="#D8D8D8" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAdjDr" Grid.Column="3" Text="0" TextColor="#FFFFFF" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAdjCr" Grid.Column="4" Text="0" TextColor="#FFFFFF" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAdjTbDr" Grid.Column="5" Text="0" TextColor="#D8D8D8" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAdjTbCr" Grid.Column="6" Text="0" TextColor="#D8D8D8" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotIncDr" Grid.Column="7" Text="0" TextColor="#4FA36A" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotIncCr" Grid.Column="8" Text="0" TextColor="#4FA36A" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotBsDr" Grid.Column="9" Text="0" TextColor="#FFFFFF" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotBsCr" Grid.Column="10" Text="0" TextColor="#FFFFFF" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                            </Grid>
+
+                            <BoxView HeightRequest="1" Color="#1E121F" Opacity="0.6" />
+
+                            <!-- Baris Laba/Rugi Bersih: dipindahkan dari kolom Income Statement ke Balance Sheet -->
+                            <Grid ColumnDefinitions="180, 105,105, 105,105, 105,105, 105,105, 105,105"
+                                  Padding="14,6">
+                                <Label Grid.Column="0" Grid.ColumnSpan="7"
+                                       Text="Laba/Rugi Bersih (dipindahkan ke Neraca)"
+                                       TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold"
+                                       HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="PlugIncDr" Grid.Column="7" Text="-" TextColor="#4FA36A" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="PlugIncCr" Grid.Column="8" Text="-" TextColor="#4FA36A" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="PlugBsDr" Grid.Column="9" Text="-" TextColor="#FFFFFF" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="PlugBsCr" Grid.Column="10" Text="-" TextColor="#FFFFFF" FontSize="13" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                            </Grid>
+
+                            <!-- Total Akhir: baris ke-3 sesuai kaidah worksheet 10-kolom (harus Debit = Kredit) -->
+                            <Grid ColumnDefinitions="180, 105,105, 105,105, 105,105, 105,105, 105,105"
+                                  BackgroundColor="#0A0A0A"
+                                  Padding="14,10">
+                                <Label Grid.Column="0" Grid.ColumnSpan="7"
+                                       Text="Total Akhir"
+                                       TextColor="White" FontSize="15" FontAttributes="Bold"
+                                       HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAfterIncDr" Grid.Column="7" Text="0" TextColor="#4FA36A" FontSize="14" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAfterIncCr" Grid.Column="8" Text="0" TextColor="#4FA36A" FontSize="14" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAfterBsDr" Grid.Column="9" Text="0" TextColor="#FFFFFF" FontSize="14" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                                <Label x:Name="TotAfterBsCr" Grid.Column="10" Text="0" TextColor="#FFFFFF" FontSize="14" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalOptions="Center" />
+                            </Grid>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+                </Border>
+
+                <!-- Informasi Net Income -->
+                <Border x:Name="NetIncomeInfoCard"
+                        IsVisible="False"
+                        BackgroundColor="#141014"
+                        Stroke="#1E121F"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="14">
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                        <Label Text="ℹ️" FontSize="16" VerticalOptions="Center" />
+                        <Label Text="Laba/Rugi Bersih:" TextColor="#D8D8D8" FontSize="13" VerticalOptions="Center" />
+                        <Label x:Name="NetIncomeLabel" Text="Rp 0" TextColor="#4FA36A" FontAttributes="Bold" FontSize="13" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

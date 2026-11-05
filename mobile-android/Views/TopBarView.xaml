@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AumoFinance.Views.TopBarView"
+             BackgroundColor="#0A0A0A">
+
+    <Grid ColumnDefinitions="Auto, *, Auto"
+          VerticalOptions="Center"
+          Padding="4,12,16,12">
+
+        <!-- SISI KIRI: Tombol Menu Navigasi + Periode -->
+        <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+            
+            <!-- Tombol Menu (Trigger AppShell Drawer) -->
+            <Button x:Name="MenuButton"
+                    Text="&#xeaeb;"
+                    FontFamily="TablerIcons"
+                    FontSize="20"
+                    TextColor="#D8D8D8"
+                    BackgroundColor="Transparent"
+                    VerticalOptions="Center"
+                    Padding="0"
+                    HeightRequest="36"
+                    WidthRequest="36"
+                    Clicked="OnMenuButtonClicked" />
+
+            <!-- Label Periode -->
+            <Label x:Name="PeriodLabel"
+                   Text="-"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   TextColor="#D8D8D8"
+                   VerticalOptions="Center" />
+
+            <!-- Ikon Periode Terkunci (menggantikan emoji 🔒 yang sebelumnya digabung ke teks periode) -->
+            <Label x:Name="PeriodLockIcon"
+                   Text="&#xeae2;"
+                   FontFamily="TablerIcons"
+                   FontSize="14"
+                   TextColor="#D7192F"
+                   IsVisible="False"
+                   VerticalOptions="Center"
+                   ToolTipProperties.Text="Periode ditutup" />
+        </HorizontalStackLayout>
+
+        <!-- SISI KANAN: Indikator Connectivity & Queue Data -->
+        <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+            
+            <Border BackgroundColor="#1E121F"
+                    Stroke="#1E121F"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="8,6">
+                <!-- Ikon Status Koneksi (menggantikan bulatan + teks Online/Offline) -->
+                <Label x:Name="ConnectionStatusIcon"
+                       Text="&#xeb52;"
+                       FontFamily="TablerIcons"
+                       FontSize="15"
+                       TextColor="#4FA36A"
+                       VerticalOptions="Center"
+                       ToolTipProperties.Text="Online" />
+            </Border>
+
+        </HorizontalStackLayout>
+
+    </Grid>
+
+</ContentView>

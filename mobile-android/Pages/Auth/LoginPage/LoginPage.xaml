@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AumoFinance.Pages.Auth.LoginPage"
+             BackgroundColor="#0A0A0A"
+             NavigationPage.HasNavigationBar="False"
+             Title="Log In">
+
+    <Grid VerticalOptions="Center" Padding="24">
+
+        <!-- Login Card Container -->
+        <Border BackgroundColor="#141014"
+                Stroke="#1E121F"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 20"
+                Padding="28,32">
+
+            <VerticalStackLayout Spacing="20">
+
+                <!-- Header & App Logo -->
+                <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                    <Border BackgroundColor="#1E121F"
+                            Stroke="#1E121F"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 18"
+                            HeightRequest="60"
+                            WidthRequest="60"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,8">
+                        <Image Source="applogo.png"
+                               HeightRequest="65"
+                               WidthRequest="65"
+                               Aspect="AspectFit"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+
+                    <Label Text="AumoFinance"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="#FFFFFF"
+                           HorizontalTextAlignment="Center"
+                           CharacterSpacing="0.5" />
+
+                    <Label Text="Log in to your account to continue"
+                           FontSize="13"
+                           TextColor="#D8D8D8"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Alert/Error Box -->
+                <Border x:Name="ErrorCard"
+                        IsVisible="False"
+                        BackgroundColor="#1E121F"
+                        Stroke="#D7192F"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="12,10">
+                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="10" VerticalOptions="Center">
+                        <Label Grid.Column="0"
+                               Text="&#xea05;"
+                               FontFamily="TablerIcons"
+                               TextColor="#D7192F"
+                               FontSize="16"
+                               VerticalOptions="Center" />
+                        <Label x:Name="ErrorText"
+                               Grid.Column="1"
+                               Text="Invalid email or password."
+                               TextColor="#D7192F"
+                               FontSize="12"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+
+                <!-- Input Form Wrapper -->
+                <VerticalStackLayout Spacing="16">
+
+                    <!-- Email Input -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Email"
+                               TextColor="#D8D8D8"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+
+                        <Border BackgroundColor="#0A0A0A"
+                                Stroke="#1E121F"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="14,2">
+                            <Entry x:Name="EmailEntry"
+                                   Placeholder="name@email.com"
+                                   PlaceholderColor="#D8D8D8"
+                                   TextColor="#FFFFFF"
+                                   FontSize="14"
+                                   Keyboard="Email"
+                                   ReturnType="Next"
+                                   HeightRequest="44" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Password Input -->
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Password"
+                               TextColor="#D8D8D8"
+                               FontSize="12"
+                               FontAttributes="Bold" />
+
+                        <Border BackgroundColor="#0A0A0A"
+                                Stroke="#1E121F"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="14,2">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <Entry x:Name="PasswordEntry"
+                                       Grid.Column="0"
+                                       Placeholder="••••••••"
+                                       PlaceholderColor="#D8D8D8"
+                                       TextColor="#FFFFFF"
+                                       FontSize="14"
+                                       IsPassword="True"
+                                       ReturnType="Done"
+                                       HeightRequest="44"
+                                       VerticalOptions="Center"
+                                       Completed="OnLoginButtonClicked" />
+
+                                <Button x:Name="TogglePasswordButton"
+                                        Grid.Column="1"
+                                        Text="&#xecf0;"
+                                        FontFamily="TablerIcons"
+                                        BackgroundColor="Transparent"
+                                        TextColor="#D8D8D8"
+                                        FontSize="20"
+                                        Padding="0"
+                                        BorderWidth="0"
+                                        CornerRadius="0"
+                                        HeightRequest="40"
+                                        WidthRequest="40"
+                                        VerticalOptions="Center"
+                                        Clicked="OnTogglePasswordClicked" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Remember Me Checkbox -->
+                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="8" VerticalOptions="Center">
+                        <CheckBox x:Name="RememberMeCheckBox"
+                                  Grid.Column="0"
+                                  Color="#523363"
+                                  VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="Remember me"
+                               TextColor="#D8D8D8"
+                               FontSize="13"
+                               VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnRememberMeLabelTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+
+                </VerticalStackLayout>
+
+                <!-- Login Button, Biometrics & Indicator -->
+                <VerticalStackLayout Spacing="12" Margin="0,4,0,0">
+                    <ActivityIndicator x:Name="LoadingIndicator"
+                                       Color="#FFFFFF"
+                                       IsRunning="False"
+                                       IsVisible="False"
+                                       HeightRequest="36" />
+
+                    <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                        <Button x:Name="LoginButton"
+                                Grid.Column="0"
+                                Text="Log In"
+                                Clicked="OnLoginButtonClicked"
+                                BackgroundColor="#523363"
+                                TextColor="#FFFFFF"
+                                FontAttributes="Bold"
+                                FontSize="15"
+                                CornerRadius="12"
+                                HeightRequest="48" />
+
+                        <!-- Biometric Login Button -->
+                        <Button x:Name="BiometricButton"
+                                Grid.Column="1"
+                                Text="&#xebd1;"
+                                FontFamily="TablerIcons"
+                                FontSize="22"
+                                BackgroundColor="#1E121F"
+                                TextColor="#FFFFFF"
+                                BorderColor="#1E121F"
+                                BorderWidth="1"
+                                CornerRadius="12"
+                                HeightRequest="48"
+                                WidthRequest="48"
+                                IsVisible="False"
+                                Clicked="OnBiometricButtonClicked" />
+                    </Grid>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </Border>
+
+    </Grid>
+
+</ContentPage>

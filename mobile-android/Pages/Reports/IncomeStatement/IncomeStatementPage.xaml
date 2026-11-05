@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Reports.IncomeStatement.IncomeStatementPage"
+             BackgroundColor="#0A0A0A"
+             Title="Income Statement">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Bar Navigasi Kustom -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1" Padding="16,10,16,20">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Page Header -->
+                <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="Income Statement"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label x:Name="AsOfDateLabel"
+                               Text="Statement of Profit or Loss (IAS 1)"
+                               FontSize="12"
+                               TextColor="#D8D8D8" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator x:Name="LoadingIndicator"
+                                   Color="#4FA36A"
+                                   IsRunning="True"
+                                   IsVisible="True"
+                                   HeightRequest="40" />
+
+                <!-- Empty State -->
+                <VerticalStackLayout x:Name="EmptyStateContainer"
+                                     Spacing="12"
+                                     HorizontalOptions="Center"
+                                     Padding="0,40"
+                                     IsVisible="False">
+                    <Label Text="&#xeb43;" FontFamily="TablerIcons" FontSize="44" TextColor="#D8D8D8" HorizontalOptions="Center" />
+                    <Label x:Name="EmptyStateLabel"
+                           Text="Tidak ada data laporan laba rugi pada periode ini."
+                           TextColor="#D8D8D8"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Card Laporan Keuangan -->
+                <Border x:Name="StatementContainer"
+                        IsVisible="False"
+                        BackgroundColor="#141014"
+                        Stroke="#1E121F"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="12">
+
+                        <!-- SEKSI REVENUE -->
+                        <Label Text="REVENUE" TextColor="#FFFFFF" FontSize="12" FontAttributes="Bold" />
+                        <CollectionView x:Name="RevenueCollectionView" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                        <HorizontalStackLayout Grid.Column="0" Spacing="6">
+                                            <Label Text="{Binding ReferenceNumber}" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" />
+                                            <Label Text="{Binding AccountName}" TextColor="White" FontSize="13" />
+                                        </HorizontalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding FormattedAmount}" TextColor="White" FontSize="13" HorizontalOptions="End" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        
+                        <!-- Total Revenue -->
+                        <Grid ColumnDefinitions="*, Auto" Padding="0,6">
+                            <Label Grid.Column="0" Text="Total Revenue" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                            <Label x:Name="TotalRevenueLabel" Grid.Column="1" Text="Rp 0" TextColor="White" FontSize="13" FontAttributes="Bold" HorizontalOptions="End" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4" />
+
+                        <!-- SEKSI OPERATING EXPENSES -->
+                        <Label Text="OPERATING EXPENSES" TextColor="#FFFFFF" FontSize="12" FontAttributes="Bold" />
+                        <CollectionView x:Name="OpExpenseCollectionView" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                        <HorizontalStackLayout Grid.Column="0" Spacing="6">
+                                            <Label Text="{Binding ReferenceNumber}" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" />
+                                            <Label Text="{Binding AccountName}" TextColor="White" FontSize="13" />
+                                        </HorizontalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding FormattedAmountBracket}" TextColor="#D7192F" FontSize="13" HorizontalOptions="End" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <!-- Total Operating Expenses -->
+                        <Grid ColumnDefinitions="*, Auto" Padding="0,6">
+                            <Label Grid.Column="0" Text="Total Operating Expenses" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                            <Label x:Name="TotalOpExpenseLabel" Grid.Column="1" Text="(Rp 0)" TextColor="#D7192F" FontSize="13" FontAttributes="Bold" HorizontalOptions="End" />
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4" />
+
+                        <!-- OPERATING INCOME -->
+                        <Grid ColumnDefinitions="*, Auto" Padding="0,8" BackgroundColor="#0A0A0A">
+                            <Label Grid.Column="0" Text="Operating Income" TextColor="White" FontSize="15" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label x:Name="OperatingIncomeLabel" Grid.Column="1" Text="Rp 0" FontSize="15" FontAttributes="Bold" HorizontalOptions="End" VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- SEKSI OTHER INCOME & EXPENSES (Opsional) -->
+                        <VerticalStackLayout x:Name="OtherSectionContainer" Spacing="8" IsVisible="False">
+                            <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4" />
+                            <Label Text="OTHER INCOME &amp; EXPENSES" TextColor="#FFFFFF" FontSize="12" FontAttributes="Bold" />
+                            <CollectionView x:Name="OtherCollectionView" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="6">
+                                                <Label Text="{Binding ReferenceNumber}" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" />
+                                                <Label Text="{Binding AccountName}" TextColor="White" FontSize="13" />
+                                            </HorizontalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding FormattedAmount}" TextColor="{Binding AmountColor}" FontSize="13" HorizontalOptions="End" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+
+                        <BoxView HeightRequest="2" Color="#1E121F" Margin="0,6" />
+
+                        <!-- NET INCOME / LOSS -->
+                        <Grid ColumnDefinitions="*, Auto" Padding="0,6">
+                            <Label Grid.Column="0" Text="Net Income" TextColor="White" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label x:Name="NetIncomeLabel" Grid.Column="1" Text="Rp 0" FontSize="16" FontAttributes="Bold" HorizontalOptions="End" VerticalOptions="Center" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

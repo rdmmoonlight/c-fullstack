@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Reports.StatementOfFinancialPosition.StatementOfFinancialPositionPage"
+             BackgroundColor="#0A0A0A"
+             Title="Statement of Financial Position">
+
+    <Grid RowDefinitions="Auto, *">
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1" Padding="16,10,16,20">
+            <VerticalStackLayout Spacing="16">
+
+                <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="Statement of Financial Position"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label Text="Balance Sheet (IAS 1)"
+                               FontSize="12"
+                               TextColor="#D8D8D8" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <ActivityIndicator x:Name="LoadingIndicator"
+                                   Color="#FFFFFF"
+                                   IsRunning="True"
+                                   IsVisible="True"
+                                   HeightRequest="40" />
+
+                <VerticalStackLayout x:Name="EmptyStateContainer"
+                                     Spacing="12"
+                                     HorizontalOptions="Center"
+                                     Padding="0,40"
+                                     IsVisible="False">
+                    <Label Text="&#xebe2;" FontFamily="TablerIcons" FontSize="44" TextColor="#D8D8D8" HorizontalOptions="Center" />
+                    <Label x:Name="EmptyStateLabel"
+                           Text="Tidak ada data balance sheet pada periode ini."
+                           TextColor="#D8D8D8"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout x:Name="SheetContainer" Spacing="16" IsVisible="False">
+
+                    <!-- ASSETS -->
+                    <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="ASSETS" TextColor="#FFFFFF" FontSize="12" FontAttributes="Bold" />
+                            <CollectionView x:Name="AssetsCollectionView" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="6">
+                                                <Label Text="{Binding ReferenceNumber}" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" />
+                                                <Label Text="{Binding AccountName}" TextColor="White" FontSize="13" />
+                                            </HorizontalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding FormattedAmount}" TextColor="White" FontSize="13" HorizontalOptions="End" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4" />
+                            <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                <Label Grid.Column="0" Text="Total Assets" TextColor="White" FontSize="15" FontAttributes="Bold" />
+                                <Label x:Name="TotalAssetsLabel" Grid.Column="1" Text="Rp 0" TextColor="#FFFFFF" FontSize="15" FontAttributes="Bold" HorizontalOptions="End" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- LIABILITIES -->
+                    <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="LIABILITIES" TextColor="#FFFFFF" FontSize="12" FontAttributes="Bold" />
+                            <CollectionView x:Name="LiabilitiesCollectionView" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="6">
+                                                <Label Text="{Binding ReferenceNumber}" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" />
+                                                <Label Text="{Binding AccountName}" TextColor="White" FontSize="13" />
+                                            </HorizontalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding FormattedAmount}" TextColor="White" FontSize="13" HorizontalOptions="End" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4" />
+                            <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                <Label Grid.Column="0" Text="Total Liabilities" TextColor="White" FontSize="14" FontAttributes="Bold" />
+                                <Label x:Name="TotalLiabilitiesLabel" Grid.Column="1" Text="Rp 0" TextColor="White" FontSize="14" FontAttributes="Bold" HorizontalOptions="End" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- EQUITY -->
+                    <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="EQUITY" TextColor="#FFFFFF" FontSize="12" FontAttributes="Bold" />
+                            <CollectionView x:Name="EquityCollectionView" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="6">
+                                                <Label Text="{Binding ReferenceNumber}" TextColor="#D8D8D8" FontSize="12" FontAttributes="Bold" />
+                                                <Label Text="{Binding AccountName}" TextColor="White" FontSize="13" />
+                                            </HorizontalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding FormattedAmount}" TextColor="White" FontSize="13" HorizontalOptions="End" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4" />
+                            <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                <Label Grid.Column="0" Text="Total Equity" TextColor="White" FontSize="14" FontAttributes="Bold" />
+                                <Label x:Name="TotalEquityLabel" Grid.Column="1" Text="Rp 0" TextColor="White" FontSize="14" FontAttributes="Bold" HorizontalOptions="End" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- TOTAL LIABILITIES & EQUITY -->
+                    <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Grid.Column="0" Text="Total Liabilities &amp; Equity" TextColor="White" FontSize="15" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Label x:Name="TotalLiabilitiesAndEquityLabel" Grid.Column="1" Text="Rp 0" TextColor="#FFFFFF" FontSize="15" FontAttributes="Bold" HorizontalOptions="End" VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Coa.CoaPage"
+             BackgroundColor="#0A0A0A"
+             Title="Chart of Accounts">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Navigation Bar -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1" Padding="16,10,16,20">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Page Header: Search + Edit + Add Account Button -->
+                <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="8" VerticalOptions="Center">
+                    <SearchBar x:Name="SearchField"
+                               Grid.Column="0"
+                               Placeholder="Search account name or code..."
+                               TextChanged="OnSearchTextChanged"
+                               BackgroundColor="#141014"
+                               TextColor="#FFFFFF"
+                               PlaceholderColor="#D8D8D8"
+                               CancelButtonColor="#D8D8D8" />
+
+                    <Button x:Name="EditModeButton"
+                            Grid.Column="1"
+                            Text=" Edit"
+                            Clicked="OnToggleEditModeClicked"
+                            BackgroundColor="#1E121F"
+                            TextColor="#FFFFFF"
+                            FontAttributes="Bold"
+                            FontSize="13"
+                            CornerRadius="10"
+                            Padding="12,0"
+                            HeightRequest="40">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="TablerIcons" Glyph="&#xea98;" Color="#FFFFFF" Size="15" />
+                        </Button.ImageSource>
+                    </Button>
+
+                    <Button Grid.Column="2"
+                            Text=" New Account"
+                            Clicked="OnOpenAddModalClicked"
+                            BackgroundColor="#523363"
+                            TextColor="#FFFFFF"
+                            FontAttributes="Bold"
+                            FontSize="13"
+                            CornerRadius="10"
+                            Padding="12,0"
+                            HeightRequest="40">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="TablerIcons" Glyph="&#xea69;" Color="#FFFFFF" Size="16" />
+                        </Button.ImageSource>
+                    </Button>
+                </Grid>
+
+                <!-- Filter Section -->
+                <VerticalStackLayout Spacing="8">
+                    <Picker x:Name="CategoryPicker"
+                            Title="All Categories"
+                            SelectedIndexChanged="OnCategoryPickerChanged"
+                            BackgroundColor="#141014"
+                            TextColor="#FFFFFF"
+                            TitleColor="#D8D8D8" />
+                </VerticalStackLayout>
+
+                <!-- Notification Alert Card -->
+                <Border x:Name="AlertCard"
+                        IsVisible="False"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="12,8">
+                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                        <Label x:Name="AlertIcon" Text="&#xea67;" FontFamily="TablerIcons" FontSize="15" VerticalOptions="Center" />
+                        <Label x:Name="AlertText" Text="Message" FontSize="12" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator x:Name="LoadingIndicator"
+                                   Color="#FFFFFF"
+                                   IsRunning="True"
+                                   IsVisible="True"
+                                   HeightRequest="40" />
+
+                <!-- Empty State View -->
+                <VerticalStackLayout x:Name="EmptyStateContainer"
+                                     Spacing="12"
+                                     HorizontalOptions="Center"
+                                     Padding="0,40"
+                                     IsVisible="False">
+                    <Label Text="&#xeaad;" FontFamily="TablerIcons" FontSize="44" TextColor="#D8D8D8" HorizontalOptions="Center" />
+                    <Label Text="No accounts found."
+                           TextColor="#D8D8D8"
+                           FontSize="14"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- CollectionView List of Accounts -->
+                <CollectionView x:Name="CoaCollectionView" IsVisible="False" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="#141014"
+                                    Stroke="#1E121F"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12"
+                                    Margin="0,0,0,10"
+                                    Padding="10">
+                                <Grid ColumnDefinitions="*, Auto, Auto" RowDefinitions="Auto, Auto" ColumnSpacing="6" RowSpacing="3">
+
+                                    <!-- Row 1: Account Ref Code & Name -->
+                                    <HorizontalStackLayout Grid.Column="0" Grid.Row="0" Spacing="6" VerticalOptions="Center">
+                                        <Border BackgroundColor="#1E121F" StrokeShape="RoundRectangle 6" Padding="6,2">
+                                            <Label Text="{Binding ReferenceNumber}" TextColor="#D8D8D8" FontSize="11" FontAttributes="Bold" />
+                                        </Border>
+                                        <Label Text="{Binding AccountName}" TextColor="#FFFFFF" FontSize="13" FontAttributes="Bold" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                    </HorizontalStackLayout>
+
+                                    <!-- Row 2: Type & Role -->
+                                    <HorizontalStackLayout Grid.Column="0" Grid.Row="1" Spacing="6">
+                                        <Label Text="{Binding Type}" TextColor="#D8D8D8" FontSize="11" />
+                                        <Label Text="•" TextColor="#D8D8D8" FontSize="11" IsVisible="{Binding HasRole}" />
+                                        <Label Text="{Binding Role}" TextColor="#D8D8D8" FontSize="11" FontAttributes="Bold" IsVisible="{Binding HasRole}" />
+                                    </HorizontalStackLayout>
+
+                                    <!-- Active / Inactive Status Badge, with Balance placed underneath it -->
+                                    <VerticalStackLayout Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Spacing="3" HorizontalOptions="End" VerticalOptions="Center">
+                                        <Border BackgroundColor="{Binding StatusBackgroundColor}"
+                                                StrokeShape="RoundRectangle 6"
+                                                Padding="6,2"
+                                                HorizontalOptions="End">
+                                            <Label Text="{Binding StatusText}" TextColor="{Binding StatusTextColor}" FontSize="10" FontAttributes="Bold" />
+                                        </Border>
+                                        <Label Text="{Binding FormattedBalance}"
+                                               TextColor="{Binding BalanceColor}"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               HorizontalOptions="End"
+                                               HorizontalTextAlignment="End" />
+                                    </VerticalStackLayout>
+
+                                    <!-- Action Icons: Edit (top) / Delete (bottom), small, hidden unless Edit mode is on -->
+                                    <VerticalStackLayout Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
+                                                         Spacing="4"
+                                                         VerticalOptions="Center"
+                                                         IsVisible="{Binding IsEditMode}">
+                                        <Button Text=""
+                                                BackgroundColor="#1E121F"
+                                                TextColor="#FFFFFF"
+                                                CornerRadius="6"
+                                                CommandParameter="{Binding Id}"
+                                                Clicked="OnEditAccountClicked"
+                                                HeightRequest="22"
+                                                WidthRequest="22"
+                                                Padding="0">
+                                            <Button.ImageSource>
+                                                <FontImageSource FontFamily="TablerIcons" Glyph="&#xea98;" Color="#FFFFFF" Size="11" />
+                                            </Button.ImageSource>
+                                        </Button>
+                                        <Button Text=""
+                                                BackgroundColor="#D7192F"
+                                                TextColor="#FFFFFF"
+                                                CornerRadius="6"
+                                                CommandParameter="{Binding Id}"
+                                                Clicked="OnDeleteAccountClicked"
+                                                HeightRequest="22"
+                                                WidthRequest="22"
+                                                Padding="0">
+                                            <Button.ImageSource>
+                                                <FontImageSource FontFamily="TablerIcons" Glyph="&#xeb41;" Color="#FFFFFF" Size="11" />
+                                            </Button.ImageSource>
+                                        </Button>
+                                    </VerticalStackLayout>
+
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

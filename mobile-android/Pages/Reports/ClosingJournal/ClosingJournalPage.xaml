@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Reports.ClosingJournal.ClosingJournalPage"
+             BackgroundColor="#0A0A0A"
+             Title="Closing Journal">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Bar Navigasi Kustom -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <RefreshView x:Name="JournalRefreshView" Grid.Row="1" Refreshing="OnRefreshViewRefreshing">
+            <ScrollView Padding="16,10,16,20">
+                <VerticalStackLayout Spacing="16">
+
+                    <!-- Page Header -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Closing Journal"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   TextColor="White" />
+                            <Label Text="Closes temporary accounts into Retained Earnings."
+                                   FontSize="12"
+                                   TextColor="#D8D8D8" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Loading Indicator -->
+                    <ActivityIndicator x:Name="LoadingIndicator"
+                                       Color="#4FA36A"
+                                       IsRunning="True"
+                                       IsVisible="True"
+                                       HeightRequest="40" />
+
+                    <!-- Empty State -->
+                    <VerticalStackLayout x:Name="EmptyStateView"
+                                         Spacing="12"
+                                         HorizontalOptions="Center"
+                                         Padding="0,40"
+                                         IsVisible="False">
+                        <Label Text="&#xeae2;" FontFamily="TablerIcons" FontSize="44" TextColor="#D8D8D8" HorizontalOptions="Center" />
+                        <Label Text="Tidak ada closing journal pada periode ini."
+                               TextColor="#D8D8D8"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- Summary Net Income Card -->
+                    <Border x:Name="NetIncomeCard"
+                            BackgroundColor="#141014"
+                            Stroke="#1E121F"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="16"
+                            IsVisible="False">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="NET INCOME" FontSize="12" FontAttributes="Bold" TextColor="#FFFFFF" />
+                                <Label x:Name="RetainedEarningsAccountLabel"
+                                       Text="Retained Earnings"
+                                       FontSize="12" TextColor="#D8D8D8" />
+                            </VerticalStackLayout>
+                            <Label x:Name="NetIncomeLabel"
+                                   Grid.Column="1"
+                                   Text="Rp 0"
+                                   FontSize="16" FontAttributes="Bold"
+                                   TextColor="#4FA36A"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Groups List Collection -->
+                    <CollectionView x:Name="JournalCollectionView" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,4"
+                                        BackgroundColor="#141014"
+                                        Stroke="#1E121F"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 16"
+                                        Padding="16">
+                                    <VerticalStackLayout Spacing="12">
+
+                                        <!-- Group Header (Description) -->
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding Description}"
+                                                   FontSize="13" FontAttributes="Bold"
+                                                   TextColor="White" />
+                                            <Border Grid.Column="1"
+                                                    BackgroundColor="#1E121F"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    StrokeThickness="0"
+                                                    Padding="6,2">
+                                                <Label Text="CLOSING"
+                                                       FontSize="10" FontAttributes="Bold"
+                                                       TextColor="#FFFFFF" />
+                                            </Border>
+                                        </Grid>
+
+                                        <BoxView HeightRequest="1" Color="#1E121F" />
+
+                                        <!-- Header Line -->
+                                        <Grid ColumnDefinitions="1.5*, 3.5*, Auto, Auto" ColumnSpacing="8">
+                                            <Label Grid.Column="0" Text="Ref #" FontSize="12" FontAttributes="Bold" TextColor="#D8D8D8" />
+                                            <Label Grid.Column="1" Text="Account" FontSize="12" FontAttributes="Bold" TextColor="#D8D8D8" />
+                                            <Label Grid.Column="2" Text="Debit" FontSize="12" FontAttributes="Bold" TextColor="#D8D8D8" HorizontalTextAlignment="End" WidthRequest="80" />
+                                            <Label Grid.Column="3" Text="Credit" FontSize="12" FontAttributes="Bold" TextColor="#D8D8D8" HorizontalTextAlignment="End" WidthRequest="80" />
+                                        </Grid>
+
+                                        <!-- Lines Item Repeater -->
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Lines}" Spacing="4">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid ColumnDefinitions="1.5*, 3.5*, Auto, Auto" ColumnSpacing="8" Padding="0,4">
+                                                        <Label Grid.Column="0" Text="{Binding FormattedRef}" FontSize="12" TextColor="#D8D8D8" FontAttributes="Bold" />
+                                                        <Label Grid.Column="1" Text="{Binding AccountName}" FontSize="13" TextColor="White" LineBreakMode="TailTruncation" />
+                                                        <Label Grid.Column="2" Text="{Binding FormattedDebit}" FontSize="13" TextColor="#4FA36A" HorizontalTextAlignment="End" WidthRequest="80" />
+                                                        <Label Grid.Column="3" Text="{Binding FormattedCredit}" FontSize="13" TextColor="#D7192F" HorizontalTextAlignment="End" WidthRequest="80" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+
+                                        <BoxView HeightRequest="1" Color="#1E121F" />
+
+                                        <!-- Group Total Footer -->
+                                        <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="8">
+                                            <Label Grid.Column="0" Text="Total" FontSize="13" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding FormattedTotalDebit}" FontSize="13" FontAttributes="Bold" TextColor="#4FA36A" HorizontalTextAlignment="End" WidthRequest="80" />
+                                            <Label Grid.Column="2" Text="{Binding FormattedTotalCredit}" FontSize="13" FontAttributes="Bold" TextColor="#D7192F" HorizontalTextAlignment="End" WidthRequest="80" />
+                                        </Grid>
+
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+
+</ContentPage>

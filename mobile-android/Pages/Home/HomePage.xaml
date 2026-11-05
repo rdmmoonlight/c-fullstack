@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Home.HomePage"
+             BackgroundColor="#0A0A0A">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Bar Component -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <!-- Main Home Content -->
+        <ScrollView Grid.Row="1" Padding="20,20,20,40">
+            <VerticalStackLayout Spacing="24">
+
+                <!-- Greetings Section -->
+                <VerticalStackLayout Spacing="4">
+                    <Label x:Name="GreetingLabel"
+                           Text="Good Morning,"
+                           TextColor="#D8D8D8"
+                           FontSize="16" />
+                    <Label x:Name="UserNameLabel"
+                           Text="Pak Ghofur"
+                           TextColor="#FFFFFF"
+                           FontAttributes="Bold"
+                           FontSize="24" />
+                </VerticalStackLayout>
+
+                <!-- Quick Actions Grid -->
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="16">
+                    <!-- Go To Dashboard Button -->
+                    <Button Grid.Column="0"
+                            Text="  Dashboard"
+                            BackgroundColor="#141014"
+                            TextColor="#FFFFFF"
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            CornerRadius="12"
+                            HeightRequest="56"
+                            Clicked="OnDashboardFabClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="TablerIcons" Glyph="&#xea87;" Color="#FFFFFF" Size="18" />
+                        </Button.ImageSource>
+                    </Button>
+
+                    <!-- Go To New Entry Button -->
+                    <Button Grid.Column="1"
+                            Text="  New Entry"
+                            BackgroundColor="#523363"
+                            TextColor="#FFFFFF"
+                            FontAttributes="Bold"
+                            FontSize="14"
+                            CornerRadius="12"
+                            HeightRequest="56"
+                            Clicked="OnPrimaryFabClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="TablerIcons" Glyph="&#xeb0b;" Color="#FFFFFF" Size="18" />
+                        </Button.ImageSource>
+                    </Button>
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>

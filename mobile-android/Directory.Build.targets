@@ -1,0 +1,4 @@
+<Project>
+  <!-- Mencegah pemindai server GitHub / Dependabot menggagalkan restore karena kurangnya workload MAUI -->
+  <Target Name="CheckForRequiredWorkloads" Condition="'$(BuildingInsideVisualStudio)' == '' AND '$(GITHUB_ACTIONS)' == ''" BeforeTargets="Restore;CollectPackageReferences" />
+</Project>

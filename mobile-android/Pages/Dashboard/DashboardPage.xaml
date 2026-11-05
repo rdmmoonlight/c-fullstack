@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Dashboard.DashboardPage"
+             Title="Dashboard"
+             BackgroundColor="#0A0A0A">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Bar Component -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <!-- Main Dashboard Content Scrollable Area -->
+        <RefreshView x:Name="DashboardRefreshView" Grid.Row="1" Refreshing="OnRefreshViewRefreshing">
+            <ScrollView Padding="20,20,20,40">
+                <VerticalStackLayout Spacing="16">
+
+                    <!-- Page Header -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Dashboard"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   TextColor="#FFFFFF" />
+                            <Label Text="Financial summary for the current period."
+                                   FontSize="12"
+                                   TextColor="#D8D8D8" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Loading Indicator Overlay -->
+                    <ActivityIndicator x:Name="LoadingIndicator"
+                                       IsRunning="True"
+                                       IsVisible="True"
+                                       HeightRequest="40"
+                                       WidthRequest="40"
+                                       Color="#FFFFFF"
+                                       HorizontalOptions="Center"
+                                       Margin="0,20,0,0" />
+
+                    <!-- Dashboard Metrics Content -->
+                    <VerticalStackLayout x:Name="DashboardContent"
+                                         Spacing="16"
+                                         IsVisible="False">
+
+                        <!-- Main Balance Card (Total Cash / Assets) -->
+                        <Border BackgroundColor="#141014"
+                                Stroke="#1E121F"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="20">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Total Cash &amp; Assets"
+                                       FontSize="13"
+                                       TextColor="#D8D8D8" />
+                                <Label x:Name="CashLabel"
+                                       Text="Rp 0"
+                                       FontSize="32"
+                                       FontAttributes="Bold"
+                                       TextColor="#FFFFFF" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Cash on Hand Card -->
+                        <Border x:Name="CashCard"
+                                BackgroundColor="#141014"
+                                Stroke="#1E121F"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="16"
+                                IsVisible="False">
+                            <VerticalStackLayout Spacing="10">
+                                <Label Text="CASH ON HAND"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="#D8D8D8"
+                                       CharacterSpacing="0.8" />
+                                <BoxView HeightRequest="1" Color="#1E121F" />
+                                <VerticalStackLayout x:Name="CashItemsLayout" Spacing="10" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Bank Balances Card -->
+                        <Border x:Name="BankCard"
+                                BackgroundColor="#141014"
+                                Stroke="#1E121F"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="16"
+                                IsVisible="False">
+                            <VerticalStackLayout Spacing="10">
+                                <Label Text="BANK BALANCES"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="#D8D8D8"
+                                       CharacterSpacing="0.8" />
+                                <BoxView HeightRequest="1" Color="#1E121F" />
+                                <VerticalStackLayout x:Name="BankItemsLayout" Spacing="10" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Financial Summary Grid (2 Columns x 2 Rows) -->
+                        <Grid ColumnDefinitions="*, *"
+                              RowDefinitions="Auto, Auto"
+                              ColumnSpacing="12"
+                              RowSpacing="12">
+
+                            <!-- Net Income Card -->
+                            <Border Grid.Row="0" Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    BackgroundColor="#141014"
+                                    Stroke="#1E121F"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    Padding="16">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Net Income"
+                                           FontSize="12"
+                                           FontAttributes="Bold"
+                                           TextColor="#D8D8D8"
+                                           CharacterSpacing="0.8" />
+                                    <Label x:Name="NetIncomeLabel"
+                                           Text="Rp 0"
+                                           FontSize="22"
+                                           FontAttributes="Bold"
+                                           TextColor="#FFFFFF" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Total Revenue Card -->
+                            <Border Grid.Row="1" Grid.Column="0"
+                                    BackgroundColor="#141014"
+                                    Stroke="#1E121F"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    Padding="16">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Revenue"
+                                           FontSize="12"
+                                           FontAttributes="Bold"
+                                           TextColor="#D8D8D8"
+                                           CharacterSpacing="0.8" />
+                                    <Label x:Name="RevenueLabel"
+                                           Text="Rp 0"
+                                           FontSize="18"
+                                           FontAttributes="Bold"
+                                           TextColor="#4FA36A" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Total Expenses Card -->
+                            <Border Grid.Row="1" Grid.Column="1"
+                                    BackgroundColor="#141014"
+                                    Stroke="#1E121F"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    Padding="16">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Expenses"
+                                           FontSize="12"
+                                           FontAttributes="Bold"
+                                           TextColor="#D8D8D8"
+                                           CharacterSpacing="0.8" />
+                                    <Label x:Name="ExpenseLabel"
+                                           Text="Rp 0"
+                                           FontSize="18"
+                                           FontAttributes="Bold"
+                                           TextColor="#D7192F" />
+                                </VerticalStackLayout>
+                            </Border>
+
+                        </Grid>
+
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <!-- Primary Action Floating Button -->
+        <Button Grid.Row="1"
+                Text="&#xeb0b;"
+                FontFamily="TablerIcons"
+                FontSize="24"
+                TextColor="#FFFFFF"
+                BackgroundColor="#523363"
+                CornerRadius="28"
+                Padding="0"
+                HeightRequest="56"
+                WidthRequest="56"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,24,24"
+                Clicked="OnPrimaryFabClicked"
+                ToolTipProperties.Text="New Journal Entry" />
+
+    </Grid>
+
+</ContentPage>

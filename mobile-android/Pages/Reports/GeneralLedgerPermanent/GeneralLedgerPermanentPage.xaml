@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Reports.GeneralLedgerPermanent.GeneralLedgerPermanentPage"
+             BackgroundColor="#0A0A0A"
+             Title="General Ledger - Permanent">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Navigation Bar -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1" Padding="16,10,16,20">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Navigation Button (Header Text Removed) -->
+                <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                    <Button Grid.Column="1"
+                            Text="  General Journal"
+                            Clicked="OnGeneralJournalClicked"
+                            BackgroundColor="#141014"
+                            BorderColor="#1E121F"
+                            BorderWidth="1"
+                            TextColor="#D8D8D8"
+                            FontAttributes="Bold"
+                            FontSize="12"
+                            CornerRadius="10"
+                            Padding="12,0"
+                            HeightRequest="40">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="TablerIcons" Glyph="&#xea39;" Color="#D8D8D8" Size="14" />
+                        </Button.ImageSource>
+                    </Button>
+                </Grid>
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator x:Name="LoadingIndicator"
+                                   Color="#FFFFFF"
+                                   IsRunning="True"
+                                   IsVisible="True"
+                                   HeightRequest="40" />
+
+                <!-- Empty State -->
+                <VerticalStackLayout x:Name="EmptyStateContainer"
+                                     Spacing="12"
+                                     HorizontalOptions="Center"
+                                     Padding="0,40"
+                                     IsVisible="False">
+                    <Label x:Name="EmptyIconLabel"
+                           Text="&#xea39;"
+                           FontFamily="TablerIcons"
+                           FontSize="44"
+                           TextColor="#D8D8D8"
+                           HorizontalOptions="Center" />
+                    <Label x:Name="EmptyStateLabel"
+                           Text="No active period selected or permanent accounts found."
+                           TextColor="#D8D8D8"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+
+                <!-- Permanent Accounts List (CollectionView Grouped Card) -->
+                <CollectionView x:Name="LedgersCollectionView"
+                                IsVisible="False"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="#141014"
+                                    Stroke="#1E121F"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    Margin="0,0,0,16"
+                                    Padding="16">
+                                <VerticalStackLayout Spacing="12">
+
+                                    <!-- Account Card Header -->
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                            <Border BackgroundColor="#0A0A0A"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="6,2">
+                                                <Label Text="{Binding ReferenceNumber}"
+                                                       TextColor="#FFFFFF"
+                                                       FontAttributes="Bold"
+                                                       FontSize="12" />
+                                            </Border>
+                                            <Label Text="{Binding AccountName}"
+                                                   TextColor="White"
+                                                   FontAttributes="Bold"
+                                                   FontSize="15"
+                                                   VerticalOptions="Center" />
+                                            <Border BackgroundColor="#1E121F"
+                                                    StrokeShape="RoundRectangle 6"
+                                                    Padding="6,2"
+                                                    VerticalOptions="Center">
+                                                <Label Text="{Binding Type}"
+                                                       TextColor="#D8D8D8"
+                                                       FontSize="10" />
+                                            </Border>
+                                        </HorizontalStackLayout>
+
+                                        <!-- Total Ending Balance -->
+                                        <Label Grid.Column="1"
+                                               Text="{Binding FormattedEndingBalance}"
+                                               TextColor="{Binding EndingBalanceColor}"
+                                               FontAttributes="Bold"
+                                               FontSize="13"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <BoxView HeightRequest="1" Color="#1E121F" />
+
+                                    <!-- Transactions / Account Posting List -->
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Lines}" Spacing="8">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10" RowDefinitions="Auto, Auto">
+                                                    
+                                                    <!-- Date & Description -->
+                                                    <Label Grid.Column="0" Grid.Row="0"
+                                                           Text="{Binding EntryDate, StringFormat='{0:MM/dd/yy}'}"
+                                                           TextColor="#D8D8D8"
+                                                           FontSize="11"
+                                                           FontAttributes="Bold" />
+                                                    
+                                                    <Label Grid.Column="1" Grid.Row="0"
+                                                           Text="{Binding Description}"
+                                                           TextColor="#D8D8D8"
+                                                           FontSize="12"
+                                                           LineBreakMode="TailTruncation" />
+
+                                                    <!-- Running Balance -->
+                                                    <Label Grid.Column="2" Grid.Row="0"
+                                                           Text="{Binding FormattedRunningBalance}"
+                                                           TextColor="White"
+                                                           FontAttributes="Bold"
+                                                           FontSize="12"
+                                                           HorizontalOptions="End" />
+
+                                                    <!-- Debit & Credit Details -->
+                                                    <HorizontalStackLayout Grid.Column="1" Grid.Row="1" Spacing="10">
+                                                        <Label Text="{Binding FormattedDebit}"
+                                                               TextColor="#4FA36A"
+                                                               FontSize="10"
+                                                               IsVisible="{Binding HasDebit}" />
+                                                        <Label Text="{Binding FormattedCredit}"
+                                                               TextColor="#D7192F"
+                                                               FontSize="10"
+                                                               IsVisible="{Binding HasCredit}" />
+                                                    </HorizontalStackLayout>
+
+                                                </Grid>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

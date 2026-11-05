@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Settings.SettingsPage"
+             BackgroundColor="#0A0A0A"
+             Title="Settings">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20" Spacing="20">
+
+                <!-- Section: Daily Reminder Notifications -->
+                <Border BackgroundColor="#141014"
+                        Stroke="#1E121F"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="20">
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.3" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="16">
+                        
+                        <!-- Title & Header -->
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#1E121F"
+                                    Stroke="#1E121F"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    HeightRequest="40"
+                                    WidthRequest="40"
+                                    VerticalOptions="Center">
+                                <Label Text="&#xea35;"
+                                       FontFamily="TablerIcons"
+                                       FontSize="20"
+                                       TextColor="#FFFFFF"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label Text="Daily Reminder"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#FFFFFF" />
+                                <Label Text="Get reminded to log your daily financial transactions"
+                                       FontSize="12"
+                                       TextColor="#D8D8D8" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4" />
+
+                        <!-- Toggle Enable/Disable Notification -->
+                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                            <Label Grid.Column="0"
+                                   Text="Enable Daily Reminder"
+                                   FontSize="14"
+                                   TextColor="#D8D8D8"
+                                   VerticalOptions="Center" />
+                            <Switch x:Name="ReminderSwitch"
+                                    Grid.Column="1"
+                                    OnColor="#523363"
+                                    ThumbColor="White"
+                                    Toggled="OnReminderToggled" />
+                        </Grid>
+
+                        <!-- Time Picker Container -->
+                        <VerticalStackLayout x:Name="TimePickerContainer" Spacing="8">
+                            <Label Text="Reminder Time"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="#D8D8D8" />
+
+                            <Border BackgroundColor="#0A0A0A"
+                                    Stroke="#1E121F"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="12,4">
+                                <TimePicker x:Name="ReminderTimePicker"
+                                            TextColor="White"
+                                            FontSize="15"
+                                            Format="hh:mm tt"
+                                            TimeSelected="OnTimeSelected" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Section: Application Settings & Updates -->
+                <Border BackgroundColor="#141014"
+                        Stroke="#1E121F"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16"
+                        Padding="20">
+                    <Border.Shadow>
+                        <Shadow Brush="#000000" Offset="0,4" Radius="12" Opacity="0.3" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="16">
+                        <Label Text="SETTINGS &amp; UPDATES"
+                               FontSize="11"
+                               FontAttributes="Bold"
+                               TextColor="#D8D8D8"
+                               CharacterSpacing="0.8" />
+
+                        <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="Automatic Updates"
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       TextColor="#FFFFFF" />
+                                <Label Text="Automatically check for app updates on startup"
+                                       FontSize="10"
+                                       TextColor="#D8D8D8" />
+                            </VerticalStackLayout>
+                            <Switch x:Name="AutoUpdateSwitch"
+                                    Grid.Column="1"
+                                    OnColor="#523363"
+                                    ThumbColor="White"
+                                    Toggled="OnAutoUpdateToggled" />
+                        </Grid>
+
+                        <Button Text="Check for Updates"
+                                BackgroundColor="#1E121F"
+                                TextColor="#FFFFFF"
+                                FontAttributes="Bold"
+                                FontSize="12"
+                                CornerRadius="10"
+                                HeightRequest="40"
+                                Clicked="OnCheckUpdateManualClicked" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Save Button -->
+                <Button x:Name="SaveButton"
+                        Text="Save Settings"
+                        Clicked="OnSaveSettingsClicked"
+                        BackgroundColor="#523363"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="15"
+                        CornerRadius="12"
+                        HeightRequest="48"
+                        Margin="0,10,0,0">
+                    <Button.Shadow>
+                        <Shadow Brush="#523363" Offset="0,4" Radius="10" Opacity="0.35" />
+                    </Button.Shadow>
+                </Button>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

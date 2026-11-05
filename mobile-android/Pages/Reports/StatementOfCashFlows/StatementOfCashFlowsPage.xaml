@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:AumoFinance.Views"
+             x:Class="AumoFinance.Pages.Reports.StatementOfCashFlows.StatementOfCashFlowsPage"
+             BackgroundColor="#0A0A0A"
+             Title="Cash Flow Statement">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Top Bar Navigasi Kustom -->
+        <views:TopBarView x:Name="TopHeader" Grid.Row="0" />
+
+        <RefreshView x:Name="CashFlowRefreshView" Grid.Row="1" Refreshing="OnRefreshViewRefreshing">
+            <ScrollView Padding="16,10,16,20">
+                <VerticalStackLayout Spacing="16">
+
+                    <!-- Page Header -->
+                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Statement of Cash Flows"
+                                   FontSize="22"
+                                   FontAttributes="Bold"
+                                   TextColor="White" />
+                            <Label Text="Indirect Method (IAS 7)"
+                                   FontSize="12"
+                                   TextColor="#D8D8D8" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Loading Indicator -->
+                    <ActivityIndicator x:Name="LoadingIndicator"
+                                       Color="#4FA36A"
+                                       IsRunning="True"
+                                       IsVisible="True"
+                                       HeightRequest="40" />
+
+                    <!-- Empty State -->
+                    <VerticalStackLayout x:Name="EmptyStateView"
+                                         Spacing="12"
+                                         HorizontalOptions="Center"
+                                         Padding="0,40"
+                                         IsVisible="False">
+                        <Label Text="&#xea55;" FontFamily="TablerIcons" FontSize="44" TextColor="#D8D8D8" HorizontalOptions="Center" />
+                        <Label Text="Tidak ada data arus kas pada periode ini."
+                               TextColor="#D8D8D8"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout x:Name="MainContentLayout" Spacing="16" IsVisible="False">
+
+                        <!-- 1. Operating Activities Card -->
+                        <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                            <VerticalStackLayout Spacing="12">
+                                <Label Text="A. OPERATING ACTIVITIES" FontSize="12" FontAttributes="Bold" TextColor="#FFFFFF" />
+                                <BoxView HeightRequest="1" Color="#1E121F" />
+
+                                <VerticalStackLayout x:Name="OperatingItemsLayout" Spacing="8" />
+
+                                <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4,0,0" />
+                                <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                    <Label Grid.Column="0" Text="Net Cash from Operating" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                                    <Label x:Name="NetOperatingLabel" Grid.Column="1" Text="Rp 0" FontSize="13" FontAttributes="Bold" HorizontalOptions="End" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 2. Investing Activities Card -->
+                        <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                            <VerticalStackLayout Spacing="12">
+                                <Label Text="B. INVESTING ACTIVITIES" FontSize="12" FontAttributes="Bold" TextColor="#FFFFFF" />
+                                <BoxView HeightRequest="1" Color="#1E121F" />
+
+                                <VerticalStackLayout x:Name="InvestingItemsLayout" Spacing="8" />
+
+                                <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4,0,0" />
+                                <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                    <Label Grid.Column="0" Text="Net Cash from Investing" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                                    <Label x:Name="NetInvestingLabel" Grid.Column="1" Text="Rp 0" FontSize="13" FontAttributes="Bold" HorizontalOptions="End" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 3. Financing Activities Card -->
+                        <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                            <VerticalStackLayout Spacing="12">
+                                <Label Text="C. FINANCING ACTIVITIES" FontSize="12" FontAttributes="Bold" TextColor="#FFFFFF" />
+                                <BoxView HeightRequest="1" Color="#1E121F" />
+
+                                <VerticalStackLayout x:Name="FinancingItemsLayout" Spacing="8" />
+
+                                <BoxView HeightRequest="1" Color="#1E121F" Margin="0,4,0,0" />
+                                <Grid ColumnDefinitions="*, Auto" Padding="0,4">
+                                    <Label Grid.Column="0" Text="Net Cash from Financing" TextColor="White" FontSize="13" FontAttributes="Bold" />
+                                    <Label x:Name="NetFinancingLabel" Grid.Column="1" Text="Rp 0" FontSize="13" FontAttributes="Bold" HorizontalOptions="End" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- 4. Summary Reconciliation Card -->
+                        <Border BackgroundColor="#141014" Stroke="#1E121F" StrokeThickness="1" StrokeShape="RoundRectangle 16" Padding="16">
+                            <VerticalStackLayout Spacing="10">
+                                <Label Text="SUMMARY RECONCILIATION" FontSize="12" FontAttributes="Bold" TextColor="#FFFFFF" />
+
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Text="Net Change in Cash" FontSize="13" TextColor="#D8D8D8" />
+                                    <Label x:Name="NetChangeCashLabel" Grid.Column="1" FontSize="13" FontAttributes="Bold" HorizontalOptions="End" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Text="Beginning Cash Balance" FontSize="13" TextColor="#D8D8D8" />
+                                    <Label x:Name="BeginningCashLabel" Grid.Column="1" FontSize="13" TextColor="White" HorizontalOptions="End" />
+                                </Grid>
+
+                                <BoxView HeightRequest="2" Color="#1E121F" Margin="0,4" />
+
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Text="Ending Cash Balance" FontSize="15" FontAttributes="Bold" TextColor="#FFFFFF" VerticalOptions="Center" />
+                                    <Label x:Name="EndingCashLabel" Grid.Column="1" FontSize="15" FontAttributes="Bold" TextColor="#FFFFFF" HorizontalOptions="End" VerticalOptions="Center" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+
+</ContentPage>

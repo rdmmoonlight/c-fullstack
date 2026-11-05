@@ -1,55 +1,93 @@
-# Prerequisites
-*.d
+# ==========================================
+# C / C++ Output & Build Directories
+# ==========================================
+# CMake build directories
+build/
+Build/
+bin/
+obj/
+out/
+cmake-build-*/
 
-# Object files
+# Compiled Object & Library Files
 *.o
-*.ko
 *.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
 *.so
-*.so.*
 *.dylib
+*.dll
+*.a
+*.lib
 
-# Executables
+# C/C++ Executables
 *.exe
 *.out
 *.app
-*.i*86
-*.x86_64
-*.hex
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Cache & Local Tooling
+.cmake/
+CMakeCache.txt
+CMakeFiles/
+CMakeLists.txt.user
+*.swp
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# ==========================================
+# C# / .NET / Blazor Hybrid / MAUI
+# ==========================================
+# Build outputs
+[Bb]in/
+[Ob]j/
+[Ll]og/
+[Ll]ogs/
 
-# debug information files
-*.dwo
+# User-specific files & IDE Settings
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+*.suo
+
+# .NET artifacts & Publish folders
+appsettings.Development.json
+appsettings.Local.json
+publish/
+*.pubxml
+
+# NuGet Packages & Cache
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+
+# Android Specific (MAUI/Blazor Hybrid)
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# ==========================================
+# Docker & Nginx Local Overrides
+# ==========================================
+.env
+.env.local
+.env.development
+docker-compose.override.yml
+
+# ==========================================
+# Operating System & General Junk
+# ==========================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory

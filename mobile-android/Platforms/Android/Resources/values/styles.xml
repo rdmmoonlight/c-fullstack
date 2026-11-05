@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <!-- Main Theme MAUI -->
+    <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Status bar (jam, baterai, sinyal) tetap terlihat -->
+        <item name="android:windowFullscreen">false</item>
+        <!-- Memastikan background splash menutupi layar sampai area notch Oppo A12 -->
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <!-- Status bar gelap selaras dengan tema app -->
+        <item name="android:statusBarColor">#0A0A0A</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
