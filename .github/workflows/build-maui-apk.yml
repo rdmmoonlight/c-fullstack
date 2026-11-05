@@ -20,7 +20,7 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x' # Atau 9.0.x sesuai spesifikasi project
+        dotnet-version: '8.0.x'
 
     - name: Install MAUI Android Workload
       run: |
@@ -30,7 +30,7 @@ jobs:
       run: |
         dotnet restore mobile
 
-    - name: Build Android APK (Build SDK 34, Support Min API 28)
+    - name: Build Android APK (Target API 34, Min API 28)
       run: |
         dotnet publish mobile -c Release -f net8.0-android34.0 --no-restore -p:AndroidPackageFormat=apk -p:SupportedOSPlatformVersion=28.0
 
