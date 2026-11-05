@@ -1,63 +1,68 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<!-- Bypass Workload Validation untuk Restore/Dependabot -->
-		<MauiEnableWorkloadValidation>false</MauiEnableWorkloadValidation>
-		<SkipImportWorkloadManifests>true</SkipImportWorkloadManifests>
+  <PropertyGroup>
+	<!-- Metadata Aplikasi -->
+    <ApplicationTitle>Aumo Mobile (C)</ApplicationTitle>
+    <ApplicationId>com.bnrc.aumofinance</ApplicationId>
+    <ApplicationVersion>2.0.0</ApplicationVersion>
+    <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
 
-		<!-- Jika dipindai oleh server otomatis GitHub (tanpa GITHUB_ACTIONS aktif di level job), fallback ke net10.0 polos -->
-		<TargetFramework Condition="'$(BuildingInsideVisualStudio)' == '' AND '$(GITHUB_ACTIONS)' == ''">net10.0</TargetFramework>
-		<TargetFramework Condition="'$(BuildingInsideVisualStudio)' != '' OR '$(GITHUB_ACTIONS)' != ''">net10.0-android36.0</TargetFramework>
+    <!-- Bypass Workload Validation untuk Restore/Dependabot -->
+    <MauiEnableWorkloadValidation>false</MauiEnableWorkloadValidation>
+    <SkipImportWorkloadManifests>true</SkipImportWorkloadManifests>
 
-		<OutputType>Exe</OutputType>
-		<RootNamespace>AumoFinance</RootNamespace>
-		
-		<!-- Gunakan UseMaui hanya jika menargetkan Android atau saat build aktif -->
-		<UseMaui Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</UseMaui>
+    <!-- Target Framework Dynamic Fallback -->
+    <TargetFramework Condition="'$(BuildingInsideVisualStudio)' == '' AND '$(GITHUB_ACTIONS)' == ''">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(BuildingInsideVisualStudio)' != '' OR '$(GITHUB_ACTIONS)' != ''">net10.0-android36.0</TargetFramework>
 
-		<SingleProject>true</SingleProject>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>AumoFinance</RootNamespace>
 
-		<!-- Abaikan warning CS0649 & CS0169 agar TreatWarningsAsErrors tidak membatalkan build -->
-		<!-- XC0022/XC0025: saran optimisasi compiled-binding (x:DataType), bukan error logika,
-		     jadi tidak perlu menggagalkan build. Bisa dirapikan bertahap di kemudian hari. -->
-		<NoWarn>$(NoWarn);NU1605;CS0649;CS0169;NETSDK1202;XC0022;XC0025</NoWarn>
+    <!-- Aktifkan MAUI hanya saat menargetkan Android -->
+    <UseMaui Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</UseMaui>
 
-		<ApplicationTitle>Aumo Mobile (C#) </ApplicationTitle>
-		<ApplicationId>com.bnrc.aumofinance</ApplicationId>
-		<ApplicationVersion>2.0.0</ApplicationVersion>
-		<ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">28.0</SupportedOSPlatformVersion>
-	</PropertyGroup>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
 
-	<PropertyGroup Condition="'$(Configuration)' == 'Release' AND $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
-		<PublishTrimmed>true</PublishTrimmed>
-		<AndroidLinkMode>SdkOnly</AndroidLinkMode>
-	</PropertyGroup>
+    <!-- Abaikan warning build spesifik (termasuk saran compiled-binding XC0022/XC0025) -->
+    <NoWarn>$(NoWarn);NU1605;CS0649;CS0169;NETSDK1202;XC0022;XC0025</NoWarn>
 
-	<Target Name="CheckForRequiredWorkloads" BeforeTargets="Restore;CollectPackageReferences" />
+    <!-- Mengunci batas minimal OS ke Android 9.0 (API Level 28) -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">28.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<MauiIcon Include="Resources\AppIcon\appicon.png" Color="#1E121F" ForegroundScale="0.8" />
-		<MauiSplashScreen Include="Resources\Splash\splash.png" Color="#FFFFFF" BaseSize="512,512" Resize="true" />
-		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
-		<MauiFont Include="Resources\Fonts\*" />
-		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-	</ItemGroup>
+  <!-- Konfigurasi Optimasi Build Release Android -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' AND '$([MSBuild]::GetTargetPlatformIdentifier(&quot;$(TargetFramework)&quot;))' == 'android'">
+    <PublishTrimmed>true</PublishTrimmed>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-		
-		<!-- Database & Entity Framework Core -->
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
-		<PackageReference Include="Npgsql" Version="9.0.3" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
-		
-		<!-- Library Otentikasi Biometrik -->
-		<PackageReference Include="Plugin.Fingerprint" Version="3.0.0-beta.1" />
-	</ItemGroup>
+  <!-- Override Target untuk Membantu Restore CI/CD -->
+  <Target Name="CheckForRequiredWorkloads" BeforeTargets="Restore;CollectPackageReferences" />
+
+  <!-- Assets & Resources -->
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.png" Color="#1E121F" ForegroundScale="0.8" />
+    <MauiSplashScreen Include="Resources\Splash\splash.png" Color="#FFFFFF" BaseSize="512,512" Resize="true" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+    <MauiFont Include="Resources\Fonts\*" />
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Package Dependencies -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+
+    <!-- Database & Entity Framework Core -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
+
+    <!-- Authentication & Security -->
+    <PackageReference Include="Plugin.Fingerprint" Version="3.0.0-beta.1" />
+  </ItemGroup>
 
 </Project>
