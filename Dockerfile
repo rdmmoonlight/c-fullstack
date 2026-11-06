@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy file solusi dan project untuk memanfaat simpanan cache layer (dotnet restore)
-COPY *.sln ./
+COPY AumoFinance.sln ./
 COPY backend/AumoBackend.csproj ./backend/
 COPY frontend/AumoBlazor.csproj ./frontend/
 COPY backend-fs/backend-fs.fsproj ./backend-fs/
