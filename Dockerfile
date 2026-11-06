@@ -58,7 +58,7 @@ RUN rm -rf ./*
 COPY --from=build /app/publish/frontend/wwwroot/wwwroot .
 
 # Copy konfigurasi Nginx dari folder /nginx/neginx.conf
-COPY nginx/neginx.conf /etc/nginx/nginx.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80 443
 CMD ["nginx", "-g", "daemon off;"]
