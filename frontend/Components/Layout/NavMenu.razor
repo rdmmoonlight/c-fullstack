@@ -4,77 +4,120 @@
 
 <AuthorizeView>
     <Authorized>
-        <MudPaper Width="260px" Elevation="1" Class="py-3 sidebar-paper">
+        <MudPaper Width="@(_isCollapsed ? "70px" : "260px")" Elevation="1" Class="py-2 sidebar-paper">
+            
+            <!-- TOGGLE BUTTON EXPAND / HIDE SIDEBAR -->
+            <div class="d-flex align-items-center justify-content-between px-3 mb-2">
+                @if (!_isCollapsed)
+                {
+                    <MudText Typo="Typo.subtitle1" Class="fw-bold text-primary">Aumo Finance</MudText>
+                }
+                <MudIconButton Icon="@(_isCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)"
+                               Color="Color.Inherit"
+                               OnClick="ToggleSidebar"
+                               Size="Size.Small"
+                               Title="@(_isCollapsed ? "Expand Sidebar" : "Collapse Sidebar")" />
+            </div>
+
+            <MudDivider Class="mb-2" />
+
             <MudNavMenu Color="Color.Primary" Bordered="true">
                 
                 <!-- BRAND / HOME -->
-                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
-                    Aumo Finance
+                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Warning">
+                    @if (!_isCollapsed) { <text>Home</text> }
                 </MudNavLink>
-
-                <MudDivider Class="my-2" />
 
                 <!-- MAIN NAVIGATION -->
                 <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">
-                    Dashboard
+                    @if (!_isCollapsed) { <text>Dashboard</text> }
                 </MudNavLink>
 
                 <MudNavLink Href="/journal-entry/create" Icon="@Icons.Material.Filled.PostAdd">
-                    Journal Entry
+                    @if (!_isCollapsed) { <text>Journal Entry</text> }
                 </MudNavLink>
 
-                <!-- REPORTS GROUP -->
-                <MudNavGroup Title="Reports" Icon="@Icons.Material.Filled.Folder" Expanded="false">
-                    <MudNavLink Href="/reports/general-journal">General Journal</MudNavLink>
-                    <MudNavLink Href="/reports/general-ledger" Match="NavLinkMatch.All">GL (Permanent Accounts)
-                    </MudNavLink>
-                    <MudNavLink Href="/reports/general-ledger/true">GL (Temporary Accounts)</MudNavLink>
-                    <MudNavLink Href="/reports/trial-balance" Match="NavLinkMatch.All">Trial Balance</MudNavLink>
-                    <MudNavLink Href="/reports/adjusting-journal">Adjusting Journal</MudNavLink>
-                    <MudNavLink Href="/reports/trial-balance/true">Adjusted Trial Balance</MudNavLink>
-                    <MudNavLink Href="/reports/worksheet">Worksheet</MudNavLink>
-                    <MudNavLink Href="/reports/income-statement">Income Statement</MudNavLink>
-                    <MudNavLink Href="/reports/retained-earnings">Retained Earnings</MudNavLink>
-                    <MudNavLink Href="/reports/statement-of-financial-position">Financial Position</MudNavLink>
-                    <MudNavLink Href="/reports/closing-journal">Closing Journal</MudNavLink>
-                    <MudNavLink Href="/reports/post-closing-trial-balance">Post-Closing TB</MudNavLink>
-                    <MudNavLink Href="/reports/cash-flow">Cash Flow</MudNavLink>
-                </MudNavGroup>
+                <!-- REPORTS GROUP (Two-way binding @bind-Expanded agar menu muncul saat diklik) -->
+                @if (!_isCollapsed)
+                {
+                    <MudNavGroup Title="Reports" Icon="@Icons.Material.Filled.Folder" @bind-Expanded="_reportsExpanded">
+                        <MudNavLink Href="/reports/general-journal">General Journal</MudNavLink>
+                        <MudNavLink Href="/reports/general-ledger" Match="NavLinkMatch.All">GL (Permanent Accounts)</MudNavLink>
+                        <MudNavLink Href="/reports/general-ledger/true">GL (Temporary Accounts)</MudNavLink>
+                        <MudNavLink Href="/reports/trial-balance" Match="NavLinkMatch.All">Trial Balance</MudNavLink>
+                        <MudNavLink Href="/reports/adjusting-journal">Adjusting Journal</MudNavLink>
+                        <MudNavLink Href="/reports/trial-balance/true">Adjusted Trial Balance</MudNavLink>
+                        <MudNavLink Href="/reports/worksheet">Worksheet</MudNavLink>
+                        <MudNavLink Href="/reports/income-statement">Income Statement</MudNavLink>
+                        <MudNavLink Href="/reports/retained-earnings">Retained Earnings</MudNavLink>
+                        <MudNavLink Href="/reports/statement-of-financial-position">Financial Position</MudNavLink>
+                        <MudNavLink Href="/reports/closing-journal">Closing Journal</MudNavLink>
+                        <MudNavLink Href="/reports/post-closing-trial-balance">Post-Closing TB</MudNavLink>
+                        <MudNavLink Href="/reports/cash-flow">Cash Flow</MudNavLink>
+                    </MudNavGroup>
+                }
+                else
+                {
+                    <!-- Direct Icon link saat mini/collapsed mode -->
+                    <MudNavLink Href="/reports/general-journal" Icon="@Icons.Material.Filled.Folder" Title="Reports" />
+                }
 
                 <MudNavLink Href="/chart-of-accounts" Icon="@Icons.Material.Filled.AccountTree">
-                    Chart of Accounts
+                    @if (!_isCollapsed) { <text>Chart of Accounts</text> }
                 </MudNavLink>
 
                 <MudNavLink Href="/periods" Icon="@Icons.Material.Filled.CalendarMonth">
-                    Financial Periods
+                    @if (!_isCollapsed) { <text>Financial Periods</text> }
                 </MudNavLink>
 
                 <MudNavLink Href="/tools" Icon="@Icons.Material.Filled.Build">
-                    Tools
+                    @if (!_isCollapsed) { <text>Tools</text> }
                 </MudNavLink>
 
                 <MudDivider Class="my-2" />
 
                 <!-- USER ACCOUNT & SETTINGS -->
-                <MudNavGroup Title="@(context.User.Identity?.Name ?? "User")"
-                             Icon="@Icons.Material.Filled.AccountCircle">
-                    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">
-                        Settings
-                    </MudNavLink>
-                    
-                    <div class="px-4 py-2">
-                        <form action="/auth/logout" method="post">
-                            <AntiforgeryToken />
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Text" Color="Color.Error"
-                                       StartIcon="@Icons.Material.Filled.Logout" FullWidth="true"
-                                       Style="justify-content: flex-start;">
-                                Sign Out
-                            </MudButton>
-                        </form>
-                    </div>
-                </MudNavGroup>
+                @if (!_isCollapsed)
+                {
+                    <MudNavGroup Title="@(context.User.Identity?.Name ?? "User")"
+                                 Icon="@Icons.Material.Filled.AccountCircle"
+                                 @bind-Expanded="_userGroupExpanded">
+                        <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">
+                            Settings
+                        </MudNavLink>
+                        
+                        <div class="px-4 py-2">
+                            <form action="/auth/logout" method="post">
+                                <AntiforgeryToken />
+                                <MudButton ButtonType="ButtonType.Submit" 
+                                           Variant="Variant.Text" 
+                                           Color="Color.Error" 
+                                           StartIcon="@Icons.Material.Filled.Logout" 
+                                           FullWidth="true"
+                                           Style="justify-content: flex-start;">
+                                    Sign Out
+                                </MudButton>
+                            </form>
+                        </div>
+                    </MudNavGroup>
+                }
+                else
+                {
+                    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.AccountCircle" Title="Settings" />
+                }
 
             </MudNavMenu>
         </MudPaper>
     </Authorized>
 </AuthorizeView>
+
+@code {
+    private bool _isCollapsed = false;
+    private bool _reportsExpanded = false;
+    private bool _userGroupExpanded = false;
+
+    private void ToggleSidebar()
+    {
+        _isCollapsed = !_isCollapsed;
+    }
+}
