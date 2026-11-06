@@ -37,6 +37,7 @@ CMakeLists.txt.user
 [Bb]in/
 [Ob]j/
 [Ll]og/
+!mobile/Pages/Log/
 [Ll]ogs/
 
 # User-specific files & IDE Settings

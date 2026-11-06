@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AumoFinance.Pages.Log.CrashLogPage"
+             BackgroundColor="#0A0A0A"
+             NavigationPage.HasNavigationBar="False"
+             Title="Crash Log">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20" RowSpacing="16">
+
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="4">
+            <Label Text="Laporan Crash Terakhir"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#FFFFFF" />
+            <Label Text="Aplikasi berhenti tidak normal pada sesi sebelumnya."
+                   FontSize="13"
+                   TextColor="#A0A0A0" />
+        </VerticalStackLayout>
+
+        <!-- Isi Log -->
+        <Border Grid.Row="1"
+                BackgroundColor="#141014"
+                Stroke="#1E121F"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 16"
+                Padding="14">
+            <ScrollView>
+                <Label x:Name="LogLabel"
+                       FontFamily="monospace"
+                       FontSize="11"
+                       TextColor="#E1E1E1" />
+            </ScrollView>
+        </Border>
+
+        <!-- Aksi -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Button Grid.Column="0"
+                    Text="Salin"
+                    BackgroundColor="#1E121F"
+                    TextColor="#FFFFFF"
+                    CornerRadius="12"
+                    Clicked="OnCopyClicked" />
+            <Button Grid.Column="1"
+                    Text="Tutup"
+                    BackgroundColor="#D7192F"
+                    TextColor="#FFFFFF"
+                    CornerRadius="12"
+                    Clicked="OnCloseClicked" />
+        </Grid>
+
+    </Grid>
+</ContentPage>
