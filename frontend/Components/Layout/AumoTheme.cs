@@ -34,7 +34,6 @@ namespace AumoFinance.Components.Layout.Theme
                 Surface = "#161B22",          // --aumo-surface
                 AppbarBackground = "#161B22",
                 DrawerBackground = "#161B22",
-                SurfaceDark = "#1C222B",      // --aumo-surface-raised
                 TextPrimary = "#FFFFFF",      // --aumo-text
                 TextSecondary = "#94A3B8",    // --aumo-text-muted
                 LinesDefault = "#2A313C",     // --aumo-border
