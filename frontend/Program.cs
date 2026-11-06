@@ -1,10 +1,11 @@
 using AumoBackend.Extensions;
 using AumoBackend.Services.Auth;
 using AumoBlazor.Hubs;
-using AumoFinance.Components;
+using AumoFinance;
 using AumoFinance.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.HttpOverrides;
+using MudBlazor.Services;
 
 namespace AumoBlazor
 {
@@ -23,6 +24,7 @@ namespace AumoBlazor
             builder.Services.AddIdentityAndAuthServices(builder.Configuration);
             builder.Services.AddCacheAndInfrastructure(builder.Configuration);
             builder.Services.AddApplicationServices();
+            builder.Services.AddMudServices();
             builder.Services.AddValidatorsFromAssemblyContaining<AumoBackend.Program>();
 
             // Cookie sesi untuk UI: pengguna yang belum login diarahkan ke halaman login (bukan 401 seperti API).

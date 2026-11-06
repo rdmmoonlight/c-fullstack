@@ -1,10 +1,12 @@
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
 
-<!-- ==========================================
-     Aumo Finance - Main Layout
-     Cosmic / Nebula Theme
-     ========================================== -->
+@* Daftarkan custom theme dan aktifkan mode dark *@
+<MudThemeProvider Theme="_aumoTheme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
 <div class="d-flex flex-column min-vh-100 min-vw-0 aumo-main-shell">
 
@@ -15,13 +17,13 @@
         </Authorized>
     </AuthorizeView>
 
-    <!-- SHELL UTAMA (Hapus overflow-hidden agar sticky sidebar berfungsi sempurna) -->
+    <!-- SHELL UTAMA -->
     <div class="d-flex flex-grow-1 position-relative">
         
-        <!-- SIDEBAR (Sticky di sebelah kiri) -->
-        <AumoFinance.Components.Layout.Sidebar />
+        <!-- SIDEBAR -->
+        <AumoFinance.Components.Layout.NavMenu />
 
-        <!-- MAIN CONTENT AREA (Hapus margin-left: 60px dan overflow-auto) -->
+        <!-- MAIN CONTENT AREA -->
         <main id="mainContent" class="content flex-grow-1 p-2 p-md-4 d-flex flex-column" role="main">
             @Body
         </main>
@@ -30,18 +32,31 @@
 
 </div>
 
-<style>
-    body {
-        transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    .content { 
-        transition: background-color 0.3s ease;
-    }
-
-    @@media (max-width: 767.98px) {
-        #mainContent {
-            padding: 0.75rem 0.5rem !important;
+@code {
+    private readonly MudTheme _aumoTheme = new MudTheme()
+    {
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#a855f7", // Warna Ungu Utama
+            Secondary = "#ec4899", // Warna Merah Muda / Accent
+            Background = "#0f0c1b", // Dark Background Utama
+            Surface = "#1a1625", // Card / Paper / Sidebar Background
+            AppbarBackground = "#1a1625",
+            DrawerBackground = "#1a1625",
+            TextPrimary = "#ffffff", // Teks Utama Putih
+            TextSecondary = "#b3a5d0", // Teks Sekunder Muted
+            Divider = "rgba(255, 255, 255, 0.12)",
+            Success = "#10b981", // Status Hijau / LED
+            Info = "#3b82f6",
+            Warning = "#f59e0b",
+            Error = "#ef4444"
+        },
+        Typography = new Typography()
+        {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Roboto", "Segoe UI", "sans-serif" }
+            }
         }
-    }
-</style>
+    };
+}

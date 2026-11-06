@@ -1,0 +1,80 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using MudBlazor
+
+<AuthorizeView>
+    <Authorized>
+        <MudPaper Width="260px" Elevation="1" Class="py-3 sidebar-paper">
+            <MudNavMenu Color="Color.Primary" Bordered="true">
+                
+                <!-- BRAND / HOME -->
+                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+                    Aumo Finance
+                </MudNavLink>
+
+                <MudDivider Class="my-2" />
+
+                <!-- MAIN NAVIGATION -->
+                <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">
+                    Dashboard
+                </MudNavLink>
+
+                <MudNavLink Href="/journal-entry/create" Icon="@Icons.Material.Filled.PostAdd">
+                    Journal Entry
+                </MudNavLink>
+
+                <!-- REPORTS GROUP -->
+                <MudNavGroup Title="Reports" Icon="@Icons.Material.Filled.Folder" Expanded="false">
+                    <MudNavLink Href="/reports/general-journal">General Journal</MudNavLink>
+                    <MudNavLink Href="/reports/general-ledger" Match="NavLinkMatch.All">GL (Permanent Accounts)
+                    </MudNavLink>
+                    <MudNavLink Href="/reports/general-ledger/true">GL (Temporary Accounts)</MudNavLink>
+                    <MudNavLink Href="/reports/trial-balance" Match="NavLinkMatch.All">Trial Balance</MudNavLink>
+                    <MudNavLink Href="/reports/adjusting-journal">Adjusting Journal</MudNavLink>
+                    <MudNavLink Href="/reports/trial-balance/true">Adjusted Trial Balance</MudNavLink>
+                    <MudNavLink Href="/reports/worksheet">Worksheet</MudNavLink>
+                    <MudNavLink Href="/reports/income-statement">Income Statement</MudNavLink>
+                    <MudNavLink Href="/reports/retained-earnings">Retained Earnings</MudNavLink>
+                    <MudNavLink Href="/reports/statement-of-financial-position">Financial Position</MudNavLink>
+                    <MudNavLink Href="/reports/closing-journal">Closing Journal</MudNavLink>
+                    <MudNavLink Href="/reports/post-closing-trial-balance">Post-Closing TB</MudNavLink>
+                    <MudNavLink Href="/reports/cash-flow">Cash Flow</MudNavLink>
+                </MudNavGroup>
+
+                <MudNavLink Href="/chart-of-accounts" Icon="@Icons.Material.Filled.AccountTree">
+                    Chart of Accounts
+                </MudNavLink>
+
+                <MudNavLink Href="/periods" Icon="@Icons.Material.Filled.CalendarMonth">
+                    Financial Periods
+                </MudNavLink>
+
+                <MudNavLink Href="/tools" Icon="@Icons.Material.Filled.Build">
+                    Tools
+                </MudNavLink>
+
+                <MudDivider Class="my-2" />
+
+                <!-- USER ACCOUNT & SETTINGS -->
+                <MudNavGroup Title="@(context.User.Identity?.Name ?? "User")"
+                             Icon="@Icons.Material.Filled.AccountCircle">
+                    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">
+                        Settings
+                    </MudNavLink>
+                    
+                    <div class="px-4 py-2">
+                        <form action="/auth/logout" method="post">
+                            <AntiforgeryToken />
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Text" Color="Color.Error"
+                                       StartIcon="@Icons.Material.Filled.Logout" FullWidth="true"
+                                       Style="justify-content: flex-start;">
+                                Sign Out
+                            </MudButton>
+                        </form>
+                    </div>
+                </MudNavGroup>
+
+            </MudNavMenu>
+        </MudPaper>
+    </Authorized>
+</AuthorizeView>
