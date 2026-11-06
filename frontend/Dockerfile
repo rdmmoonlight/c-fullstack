@@ -9,13 +9,13 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy kedua file .csproj agar restore layer dapat di-cache dengan benar
-COPY ["blazor/AumoBlazor.csproj", "blazor/"]
+COPY ["frontend/AumoBlazor.csproj", "frontend/"]
 COPY ["backend/AumoBackend.csproj", "backend/"]
-RUN dotnet restore "blazor/AumoBlazor.csproj"
+RUN dotnet restore "frontend/AumoBlazor.csproj"
 
 # Copy seluruh source code repositori
 COPY . .
-WORKDIR "/src/blazor"
+WORKDIR "/src/frontend"
 RUN dotnet publish "AumoBlazor.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # 3. Stage Final

@@ -5,4 +5,5 @@
   <Folder Name="/frontend/">
     <Project Path="frontend/AumoBlazor.csproj" />
   </Folder>
+  <Project Path="backend-fs/backend-fs.fsproj" />
 </Solution>

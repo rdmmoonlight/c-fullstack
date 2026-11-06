@@ -1,14 +1,19 @@
-
-@* Namespace Backend *@
-@* Namespace Komponen UI *@
-@using AumoBackend
-@using AumoBackend.Controllers
+@* Kontrak data dan service berasal dari /backend (SSOT). UI tidak mengakses tabel database secara langsung. *@
 @using AumoBackend.DTOs
-@using AumoBackend.DTOs.Reports
-@using AumoBackend.Migrations
 @using AumoBackend.Models
-@using AumoBackend.Services
+@using AumoBackend.Services.Auth
+@using AumoBackend.Services.ChartOfAccounts
 @using AumoBackend.Services.Dashboard
+@using AumoBackend.Services.Home
+@using AumoBackend.Services.JournalEntries
+@using AumoBackend.Services.Periods
+@using AumoBackend.Services.Reports.FinancialStatements
+@using AumoBackend.Services.Reports.GeneralLedgers
+@using AumoBackend.Services.Reports.Journals
+@using AumoBackend.Services.Reports.TrialBalances
+@using AumoBackend.Services.Reports.Worksheet
+@using AumoBackend.Services.Tools
+@using AumoBackend.DTOs.Reports
 @using AumoBackend.ViewModels
 @using AumoBackend.ViewModels.Reports
 @using AumoFinance
@@ -16,6 +21,7 @@
 @using AumoFinance.Components.Dashboard
 @using AumoFinance.Components.Layout
 @using AumoFinance.Components.Pages
+@using AumoFinance.Services
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization
@@ -28,5 +34,3 @@
 @using System.Globalization
 @using System.Net.Http
 @using System.Net.Http.Json
-global using JournalEntry = AumoBackend.DTOs.JournalEntryResponseDto;
-global using JournalEntryLine = AumoBackend.DTOs.JournalEntryLineDto;

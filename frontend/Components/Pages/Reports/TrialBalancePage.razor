@@ -2,16 +2,14 @@
 @page "/reports/trial-balance/{IncludeAdjusting:bool}"
 @rendermode InteractiveServer
 @attribute [Authorize]
+@inject ITrialBalancesService TrialBalances
+@inject UserContext User
+@inject SelectedPeriodProvider PeriodProvider
+@inject NavigationManager Nav
 
-@using System.Security.Claims
 @using System.Globalization
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.EntityFrameworkCore
-@using AumoBackend.Models
-@using AumoBackend.Data
 
-@inject AppDbContext DbContext
-@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="container-fluid">
     @if (noPeriodSelected)
@@ -135,12 +133,8 @@
 @code {
     private static readonly CultureInfo Idr = new("id-ID");
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthStateTask { get; set; }
-
     [Parameter] public bool IncludeAdjusting { get; set; }
 
-    private Guid UserId { get; set; }
     private string Title => IncludeAdjusting ? "Adjusted Trial Balance" : "Trial Balance";
 
     private List<TrialBalancesRow> rows = new();
@@ -150,130 +144,36 @@
     private decimal TotalCredit => rows.Sum(r => r.Credit);
     private bool IsBalanced => Math.Round(TotalDebit - TotalCredit, 2) == 0;
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (AuthStateTask != null)
-        {
-            var authState = await AuthStateTask;
-            var user = authState.User;
-
-            if (user.Identity?.IsAuthenticated == true)
-            {
-                var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (Guid.TryParse(userIdClaim, out var parsedGuid))
-                {
-                    UserId = parsedGuid;
-                }
-            }
-        }
-    }
-
-    // Navigasi antara /reports/trial-balance dan /reports/trial-balance/true
-    // memakai komponen Blazor yang sama (hanya parameter route yang berubah),
-    // sehingga OnInitializedAsync TIDAK terpanggil ulang. OnParametersSetAsync
-    // selalu jalan (termasuk saat load pertama, setelah OnInitializedAsync),
-    // sehingga cukup satu tempat untuk memuat data agar IncludeAdjusting yang
-    // baru benar-benar dipakai.
+    // /reports/trial-balance dan /reports/trial-balance/true memakai komponen yang sama,
+    // sehingga data dimuat di OnParametersSetAsync agar IncludeAdjusting terbaru selalu dipakai.
     protected override async Task OnParametersSetAsync()
     {
-        await LoadDataAsync();
-    }
-
-    private async Task LoadDataAsync()
-    {
-        if (UserId == Guid.Empty)
+        var userId = await User.GetUserIdAsync();
+        if (userId == Guid.Empty)
         {
-            noPeriodSelected = true;
+            Nav.NavigateTo("/auth/login", true);
             return;
         }
 
-        var period = await DbContext.Periods
-            .FirstOrDefaultAsync(p => p.UserId == UserId && p.IsSelected);
-        if (period == null)
+        var period = await PeriodProvider.GetAsync(userId);
+        if (period is null)
         {
             noPeriodSelected = true;
+            rows = new();
             return;
         }
 
         noPeriodSelected = false;
-        rows = await BuildTrialBalanceRowsAsync(period, IncludeAdjusting);
-    }
+        var reportType = IncludeAdjusting ? "adjusted" : "unadjusted";
+        rows = await TrialBalances.BuildTrialBalancesRowsAsync(userId, period, IncludeAdjusting, reportType);
 
-    public static async Task<List<TrialBalancesRow>> BuildTrialBalanceRowsAsync(AppDbContext db, Guid userId, Period period,
-bool includeAdjusting)
-    {
-        var accounts = await db.ChartOfAccounts
-            .Where(a => a.IsActive && a.UserId == userId)
-            .OrderBy(a => a.ReferenceNumber)
-            .ToListAsync();
-
-        var accountIds = accounts.Select(a => a.Id).ToList();
-
-        // Gunakan .Date agar perbandingan tidak terpengaruh jam/menit/Kind
-        var start = period.StartDate.Date;
-        var end = period.EndDate.Date;
-
-        var linesQuery = db.Set<JournalEntryDetail>()
-            .Include(l => l.JournalEntryDto)
-            .Where(l => accountIds.Contains(l.AccountId)
-                     && l.JournalEntryDto!.UserId == userId
-                     && l.JournalEntryDto!.EntryDate.Date >= start
-                     && l.JournalEntryDto!.EntryDate.Date <= end);
-
-        // Hanya General (unadjusted) atau General + Adjusting (adjusted).
-        // Closing journal tidak pernah dimasukkan.
-        var lines = includeAdjusting
-            ? await linesQuery.Where(l => l.JournalEntryDto!.JournalType == "General"
-                                       || l.JournalEntryDto!.JournalType == "Adjusting")
-                              .ToListAsync()
-            : await linesQuery.Where(l => l.JournalEntryDto!.JournalType == "General")
-                              .ToListAsync();
-
-        var rows = new List<TrialBalancesRow>();
-        foreach (var account in accounts)
+        // Snapshot bersifat pelengkap (sama seperti endpoint backend).
+        try
         {
-            var accountLines = lines.Where(l => l.AccountId == account.Id).ToList();
-
-            // Lewati akun yang tidak memiliki transaksi di periode ini
-            if (!accountLines.Any()) continue;
-
-            var normalDebit = AccountClassification.NormalBalanceIsDebit(account.Type);
-            var netBalance = normalDebit
-                ? accountLines.Sum(l => l.Debit - l.Credit)
-                : accountLines.Sum(l => l.Credit - l.Debit);
-
-            rows.Add(new TrialBalancesRow
-            {
-                AccountId = account.Id,
-                ReferenceNumber = account.ReferenceNumber,
-                AccountName = account.AccountName,
-                Type = account.Type,
-                NormalBalanceIsDebit = normalDebit,
-                NetBalance = netBalance
-            });
+            await TrialBalances.SaveSnapshotAsync(reportType, userId, period, rows);
         }
-
-        return rows;
-    }
-
-    private Task<List<TrialBalancesRow>> BuildTrialBalanceRowsAsync(Period period, bool includeAdjusting)
-        => BuildTrialBalanceRowsAsync(DbContext, UserId, period, includeAdjusting);
-
-    public sealed class TrialBalancesRow
-    {
-        public Guid AccountId { get; set; }
-        public object? ReferenceNumber { get; set; }
-        public string AccountName { get; set; } = string.Empty;
-        public object? Type { get; set; }
-        public bool NormalBalanceIsDebit { get; set; }
-        public decimal NetBalance { get; set; }
-
-        public decimal Debit => NormalBalanceIsDebit
-            ? Math.Max(NetBalance, 0)
-            : Math.Max(-NetBalance, 0);
-
-        public decimal Credit => NormalBalanceIsDebit
-            ? Math.Max(-NetBalance, 0)
-            : Math.Max(NetBalance, 0);
+        catch (Exception)
+        {
+        }
     }
 }

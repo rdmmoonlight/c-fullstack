@@ -1,11 +1,8 @@
 @page "/auth/login"
 @using System.ComponentModel.DataAnnotations
-@using AumoBackend.Models
-@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Components.Forms
 
-@inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
+@inject IAuthService Auth
 @inject NavigationManager Navigation
 @inject ILogger<Login> Logger
 
@@ -163,46 +160,69 @@
         infoMessage = QueryInfoMessage;
     }
 
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
     private async Task HandleLoginAsync()
     {
+        errorMessage = null;
+
+        if (HttpContext is null)
+        {
+            errorMessage = "Sesi login tidak dapat dibuat. Muat ulang halaman lalu coba lagi.";
+            return;
+        }
+
         try
         {
-            var result = await SignInManager.PasswordSignInAsync(
-                Input.Email,
-                Input.Password,
-                Input.RememberMe,
-                lockoutOnFailure: true);
-
-            if (result.Succeeded)
+            var request = new LoginRequest
             {
-                Logger.LogInformation("User logged in successfully.");
+                Email = Input.Email,
+                Password = Input.Password,
+                RememberMe = Input.RememberMe,
+                IsMobileClient = false,
+                OperatingSystem = "Web",
+            };
 
-                var user = await UserManager.FindByEmailAsync(Input.Email);
-                if (user != null)
-                {
-                   
-                    Guid userIdGuid = user.Id != Guid.Empty ? user.Id : Guid.NewGuid();
-                }
+            // Verifikasi kredensial, lockout, dan pembuatan cookie sesi dilakukan service backend.
+            var validation = await Auth.ValidateLoginAsync(request);
+            if (!validation.IsValid)
+            {
+                errorMessage = validation.Errors.FirstOrDefault()?.ErrorMessage ?? "Invalid login request.";
+                return;
+            }
 
-                Navigation.NavigateTo("/", forceLoad: true);
-            }
-            else if (result.RequiresTwoFactor)
-            {
-                Navigation.NavigateTo("/auth/login-2fa", forceLoad: true);
-            }
-            else if (result.IsLockedOut)
-            {
-                errorMessage = "This account has been locked out. Please try again later.";
-            }
-            else
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
+            var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
+            var result = await Auth.ProcessLoginAsync(request, ip, userAgent);
+
+            if (result is null)
             {
                 errorMessage = "Invalid email or password.";
+                return;
             }
+
+            if (result.IsLockedOut)
+            {
+                errorMessage = string.IsNullOrWhiteSpace(result.Message)
+                    ? "This account has been locked out. Please try again later."
+                    : result.Message;
+                return;
+            }
+
+            if (!result.Success)
+            {
+                errorMessage = string.IsNullOrWhiteSpace(result.Message) ? "Login failed." : result.Message;
+                return;
+            }
+
+            Logger.LogInformation("User logged in successfully.");
+            Navigation.NavigateTo("/", forceLoad: true);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error occurred during login attempt: {Message}", ex.Message);
-            errorMessage = $"Error: {ex.Message} {(ex.InnerException != null ? "-> " + ex.InnerException.Message : "")}";
+            errorMessage = "Terjadi kesalahan saat login. Silakan coba lagi.";
         }
     }
 

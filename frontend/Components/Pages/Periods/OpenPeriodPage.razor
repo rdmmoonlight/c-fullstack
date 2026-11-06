@@ -1,14 +1,10 @@
 @page "/periods/create"
 @rendermode InteractiveServer
 @attribute [Authorize]
+@inject IPeriodsService PeriodsService
+@inject UserContext User
 
-@using System.Security.Claims
-@using AumoBackend.DTOs
-@using AumoBackend.ViewModels
-@using AumoBackend.Services.Periods
 
-@inject IPeriodsService PeriodService
-@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 
 <PageTitle>Open New Period</PageTitle>
@@ -38,7 +34,7 @@
         </div>
     }
 
-    @if (UserId == Guid.Empty)
+    @if (isLoading)
     {
         <div class="text-center py-5 text-secondary">
             <div class="spinner-border spinner-border-sm me-2" role="status"></div> Memuat data...
@@ -220,31 +216,38 @@
 </div>
 
 @code {
-    private Guid UserId;
-    private OpenPeriodViewModel model = new();
+    private OpenPeriodForm model = new();
     private string? errorMessage;
     private bool isSubmitting;
+    private bool isLoading = true;
+
+    private Guid userId;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true)
+        userId = await User.GetUserIdAsync();
+        if (userId == Guid.Empty)
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
-            {
-                UserId = parsedId;
-                model.Month = DateTime.Today.Month;
-                model.Year = DateTime.Today.Year;
-                model.HasExistingPermanentAccounts = false;
-                model.SetupMode = OpenPeriodViewModel.ModeCreateNew;
-                return;
-            }
+            Nav.NavigateTo("/auth/login", true);
+            return;
         }
 
-        Nav.NavigateTo("/Account/Login", true);
+        model.Month = DateTime.Today.Month;
+        model.Year = DateTime.Today.Year;
+        model.SetupMode = CreatePeriodRequest.ModeCreateNew;
+
+        // Akun yang tersedia untuk pembukaan periode ditentukan backend.
+        var info = await PeriodsService.GetOpenPeriodInfoAsync(userId);
+        model.HasExistingPermanentAccounts = info.HasExistingPermanentAccounts;
+        model.AvailableCashAndBankAccounts = info.AvailableCashAndBankAccounts;
+        model.AvailableRetainedEarningsAccounts = info.AvailableRetainedEarningsAccounts;
+        model.PermanentAccounts = info.PermanentAccounts;
+        if (model.HasExistingPermanentAccounts)
+        {
+            model.SetupMode = CreatePeriodRequest.ModeLoadExisting;
+        }
+
+        isLoading = false;
     }
 
     private async Task HandleSubmit()
@@ -269,13 +272,13 @@
                 BankAccountName = model.BankAccountName,
                 BankBalance = model.BankBalance,
                 RetainedEarningsAccountCode = model.RetainedEarningsAccountCode,
-                RetainedEarningsAccountName = model.RetainedEarningsAccountName
+                RetainedEarningsAccountName = model.RetainedEarningsAccountName,
             };
 
-            var result = await PeriodService.CreatePeriodAsync(UserId, request);
+            var result = await PeriodsService.CreatePeriodAsync(userId, request);
             if (!result.Success)
             {
-                errorMessage = "Unable to create the period. Please review the details and try again.";
+                errorMessage = result.Message;
                 return;
             }
 
@@ -285,5 +288,28 @@
         {
             isSubmitting = false;
         }
+    }
+
+    /// <summary>Model form saja. Validasi bisnis (bulan/tahun, akun, saldo) dilakukan backend.</summary>
+    private sealed class OpenPeriodForm
+    {
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public string SetupMode { get; set; } = CreatePeriodRequest.ModeLoadExisting;
+        public int? CashAccountId { get; set; }
+        public int? BankAccountId { get; set; }
+        public int? RetainedEarningsAccountId { get; set; }
+        public string? CashAccountCode { get; set; }
+        public string? CashAccountName { get; set; }
+        public decimal? CashBalance { get; set; }
+        public string? BankAccountCode { get; set; }
+        public string? BankAccountName { get; set; }
+        public decimal? BankBalance { get; set; }
+        public string? RetainedEarningsAccountCode { get; set; }
+        public string? RetainedEarningsAccountName { get; set; }
+        public List<AccountSimpleDto> PermanentAccounts { get; set; } = new();
+        public List<AccountSimpleDto> AvailableCashAndBankAccounts { get; set; } = new();
+        public List<AccountSimpleDto> AvailableRetainedEarningsAccounts { get; set; } = new();
+        public bool HasExistingPermanentAccounts { get; set; }
     }
 }

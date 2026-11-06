@@ -33,6 +33,37 @@ public class AuthService(
         return await googleLoginValidator.ValidateAsync(request);
     }
 
+    public async Task<IReadOnlyList<string>> RegisterAsync(RegisterRequest request)
+    {
+        var errors = new List<string>();
+        if (string.IsNullOrWhiteSpace(request.FullName))
+        {
+            errors.Add("Full name is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            errors.Add("Email is required.");
+        }
+
+        if (errors.Count > 0)
+        {
+            return errors;
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = request.Email.Trim(),
+            Email = request.Email.Trim(),
+            FullName = request.FullName.Trim(),
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password);
+        return result.Succeeded
+            ? Array.Empty<string>()
+            : result.Errors.Select(e => e.Description).ToList();
+    }
+
     private async Task<AuthResponseDto> BuildLockedOutResponseAsync(ApplicationUser user)
     {
         var lockoutEnd = await userManager.GetLockoutEndDateAsync(user);

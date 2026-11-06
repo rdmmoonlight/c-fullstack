@@ -142,6 +142,8 @@ public class CashFlowLine
 
 public class IncomeStatementLine
 {
+    public string ReferenceNumber { get; set; } = string.Empty;
+
     public string AccountName { get; set; } = string.Empty;
 
     public decimal Amount { get; set; }
@@ -149,6 +151,8 @@ public class IncomeStatementLine
 
 public class FinancialPositionLine
 {
+    public string ReferenceNumber { get; set; } = string.Empty;
+
     public string AccountName { get; set; } = string.Empty;
 
     public decimal Balance { get; set; }

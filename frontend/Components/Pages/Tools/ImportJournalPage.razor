@@ -4,8 +4,6 @@
 @attribute [Authorize]
 
 @using System.Globalization
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
 @using AumoBackend.Services.Tools
@@ -13,7 +11,8 @@
 
 @inject IToolsService ImportService
 @inject IJSRuntime JS
-@inject AuthenticationStateProvider AuthStateProvider
+@inject UserContext User
+@inject JournalImportWorkflow ImportWorkflow
 @inject NavigationManager Nav
 
 <PageTitle>Import Journal Entries</PageTitle>
@@ -208,27 +207,18 @@
     private const long MaxFileSizeBytes = 20 * 1024 * 1024; // 20 MB
 
     private IBrowserFile? selectedFile;
-    private JournalImportRequestDto? parseResult;
+    private JournalImportPreview? parseResult;
     private string? successMessage;
     private string? errorMessage;
     private bool isBusy;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true)
+        UserId = await User.GetUserIdAsync();
+        if (UserId == Guid.Empty)
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
-            {
-                UserId = parsedId;
-                return;
-            }
+            Nav.NavigateTo("/auth/login", true);
         }
-
-        Nav.NavigateTo("/auth/login", true);
     }
 
     private void OnFileSelected(InputFileChangeEventArgs e)
@@ -259,27 +249,20 @@
             }
 
             memoryStream.Position = 0;
-
             if (memoryStream.Length == 0)
             {
                 errorMessage = "The uploaded file is empty.";
                 return;
             }
 
-            var result = await ImportService.ParseJournalExcelAsync(UserId, memoryStream);
-            if (!result.IsSuccess)
+            var (preview, error) = await ImportWorkflow.BuildPreviewAsync(UserId, memoryStream);
+            if (preview is null)
             {
-                errorMessage = result.Message;
+                errorMessage = error;
                 return;
             }
 
-            if (result.JournalEntries == null || !result.JournalEntries.Any())
-            {
-                errorMessage = "No valid transactions found in 'GJ' or 'AJ' sheets. Please verify your template format.";
-                return;
-            }
-
-            parseResult = result;
+            parseResult = preview;
             StateHasChanged();
 
             await JS.InvokeVoidAsync("aumoModal.show", "indexPreviewModal");
@@ -310,14 +293,10 @@
         isBusy = true;
         try
         {
-            var result = await ImportService.ImportJournalEntriesAsync(UserId, parseResult);
-            if (!result.IsSuccess)
-            {
-                errorMessage = result.Message;
-                return;
-            }
-
-            successMessage = result.Message;
+            var result = await ImportWorkflow.ImportAsync(UserId, parseResult);
+            successMessage = string.IsNullOrWhiteSpace(result.Message)
+                ? $"{result.ImportedEntriesCount} journal entries imported."
+                : result.Message;
             await JS.InvokeVoidAsync("aumoModal.hide", "indexPreviewModal");
 
             parseResult = null;

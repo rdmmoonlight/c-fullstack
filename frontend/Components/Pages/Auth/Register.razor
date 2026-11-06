@@ -1,10 +1,7 @@
 @page "/auth/register"
 @using System.ComponentModel.DataAnnotations
-@using AumoBackend.Models
-@using Microsoft.AspNetCore.Identity
 
-@inject UserManager<ApplicationUser> UserManager
-@inject SignInManager<ApplicationUser> SignInManager
+@inject IAuthService Auth
 @inject NavigationManager Navigation
 @inject ILogger<Register> Logger
 
@@ -74,6 +71,9 @@
         Input ??= new();
     }
 
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
     private async Task HandleRegisterAsync()
     {
         if (Input == null) return;
@@ -83,25 +83,42 @@
 
         try
         {
-            var user = new ApplicationUser
+            if (HttpContext is null)
             {
-                UserName = Input.Email,
+                errorMessage = "Sesi pendaftaran tidak dapat dibuat. Muat ulang halaman lalu coba lagi.";
+                return;
+            }
+
+            // Pembuatan akun dan aturan password dimiliki backend (IAuthService.RegisterAsync).
+            var errors = await Auth.RegisterAsync(new RegisterRequest
+            {
+                FullName = Input.FullName,
                 Email = Input.Email,
-                FullName = Input.FullName
-            };
+                Password = Input.Password,
+            });
 
-            var result = await UserManager.CreateAsync(user, Input.Password);
+            if (errors.Count > 0)
+            {
+                errorMessage = string.Join(" ", errors);
+                return;
+            }
 
-            if (result.Succeeded)
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
+            var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
+            var login = await Auth.ProcessLoginAsync(
+                new LoginRequest { Email = Input.Email, Password = Input.Password, IsMobileClient = false, OperatingSystem = "Web" },
+                ip,
+                userAgent);
+
+            if (login is { Success: true })
             {
                 Logger.LogInformation("User created a new account with password.");
-                await SignInManager.SignInAsync(user, isPersistent: false);
                 Navigation.NavigateTo("/", forceLoad: true);
+                return;
             }
-            else
-            {
-                errorMessage = string.Join("<br/>", result.Errors.Select(e => e.Description));
-            }
+
+            // Akun sudah dibuat; arahkan ke halaman login bila sesi otomatis gagal.
+            Navigation.NavigateTo("/auth/login", forceLoad: true);
         }
         catch (Exception ex)
         {

@@ -1,9 +1,10 @@
-using AumoBackend.Services.ChartOfAccounts;
-using AumoBackend.Services.Settings;
-using AumoBackend.Services.Tools;
+using AumoBackend.Extensions;
+using AumoBackend.Services.Auth;
 using AumoFinance.Components;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using AumoFinance.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 
 namespace AumoBlazor
 {
@@ -14,55 +15,55 @@ namespace AumoBlazor
             var builder = WebApplication.CreateBuilder(args);
 
             // =====================================
-            // 1. AUTHENTICATION & AUTHORIZATION (Cookie-Based)
-            // =====================================
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.Cookie.Name = "AumoFinance.Session";
-                    options.LoginPath = "/auth/login";
-                    options.LogoutPath = "/auth/logout";
-                    options.AccessDeniedPath = "/auth/login";
-                    options.ExpireTimeSpan = TimeSpan.FromDays(30);
-                    options.SlidingExpiration = true;
-                    options.Cookie.HttpOnly = true;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                });
-
-            builder.Services.AddAuthorization();
-            builder.Services.AddCascadingAuthenticationState();
-
-            // =====================================
-            // 2. BLAZOR CORE & CONTROLLERS
-            // =====================================
-            builder.Services.AddControllers();
-            builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
-
-            // =====================================
-            // 3. FRONTEND SERVICES & HTTP CLIENTS
+            // 1. BACKEND (SSOT): database, Identity, cache, dan seluruh service bisnis
+            //    dipakai langsung dari project /backend. Frontend tidak menulis ulang logika apa pun.
             // =====================================
             builder.Services.AddHttpClient();
-            builder.Services.AddMemoryCache();
-            builder.Services.AddHealthChecks();
+            builder.Services.AddDatabaseServices(builder.Configuration);
+            builder.Services.AddIdentityAndAuthServices(builder.Configuration);
+            builder.Services.AddCacheAndInfrastructure(builder.Configuration);
+            builder.Services.AddApplicationServices();
+            builder.Services.AddValidatorsFromAssemblyContaining<AumoBackend.Program>();
 
-            // Registered Frontend API/Service Layer Integrations
-            builder.Services.AddHttpClient("MarketApiClient", client =>
+            // Cookie sesi untuk UI: pengguna yang belum login diarahkan ke halaman login (bukan 401 seperti API).
+            builder.Services.ConfigureApplicationCookie(options =>
             {
-                client.Timeout = TimeSpan.FromSeconds(15);
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AumoFinance/1.0");
+                options.LoginPath = "/auth/login";
+                options.LogoutPath = "/auth/logout";
+                options.AccessDeniedPath = "/auth/login";
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
             });
 
-            // Service Registrations (Connecting to Backend API)
-            builder.Services.AddScoped<Services.ChartOfAccounts.IChartOfAccountsService, Services.ChartOfAccounts.ChartOfAccountsService>();
-            builder.Services.AddScoped<Services.JournalEntry.IJournalEntryService, Services.JournalEntry.JournalEntryService>();
-            builder.Services.AddScoped<Services.Settings.ISettingsService, Services.Settings.SettingsService>();
-            builder.Services.AddScoped<Services.Tools.IJournalImportService, Services.Tools.JournalImportService>();
-            builder.Services.AddScoped<Services.Tools.IToolsService, Services.Tools.ToolsService>();
+            // =====================================
+            // 2. BLAZOR
+            // =====================================
+            builder.Services.AddRazorComponents()
+                .AddInteractiveServerComponents();
+            builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddHttpContextAccessor();
 
-            // =====================================
-            // 4. FORWARDED HEADERS (Render / Reverse Proxy)
-            // =====================================
+            // Glue khusus UI (bukan logika bisnis)
+            builder.Services.AddScoped<UserContext>();
+            builder.Services.AddScoped<SelectedPeriodProvider>();
+            builder.Services.AddScoped<JournalImportWorkflow>();
+
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -70,13 +71,10 @@ namespace AumoBlazor
                 options.KnownProxies.Clear();
             });
 
-            // =====================================
-            // BUILD APPLICATION
-            // =====================================
             var app = builder.Build();
 
             // =====================================
-            // 5. HTTP PIPELINE MIDDLEWARE
+            // 3. PIPELINE
             // =====================================
             app.UseForwardedHeaders();
 
@@ -87,50 +85,25 @@ namespace AumoBlazor
             else
             {
                 app.UseHsts();
-                app.Use(async (context, next) =>
-                {
-                    try
-                    {
-                        await next();
-                    }
-                    catch (Exception ex)
-                    {
-                        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-                        logger.LogError(ex, "Unhandled exception on {Path}", context.Request.Path);
-
-                        if (!context.Response.HasStarted)
-                        {
-                            context.Response.Clear();
-                            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                            context.Response.ContentType = "application/json";
-                            await context.Response.WriteAsJsonAsync(new
-                            {
-                                success = false,
-                                message = "Terjadi kesalahan pada aplikasi frontend. Silakan coba lagi."
-                            });
-                        }
-                    }
-                });
             }
 
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseAntiforgery();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseAntiforgery();
 
-            // =====================================
-            // 6. ENDPOINTS & ROUTING
-            // =====================================
-            app.MapHealthChecks("/health");
-            app.MapControllers();
+            app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
+
+            app.MapPost("/auth/logout", async (IAuthService auth) =>
+            {
+                await auth.LogoutAsync();
+                return Results.Redirect("/auth/login");
+            }).DisableAntiforgery();
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
-            // =====================================
-            // 7. RUN APPLICATION
-            // =====================================
             app.Run();
         }
     }

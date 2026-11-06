@@ -1,3 +1,4 @@
+@using AumoBackend.DTOs.Home
 @using AumoBackend.Services
 @inject IMarketDataService MarketService
 
@@ -206,7 +207,7 @@
         try
         {
             isLoading = true;
-            marketData = await MarketService.GetMarketDataAsync();
+            marketData = MapIndicators(await MarketService.GetMarketIndicatorsAsync());
 
             if (marketData != null)
             {
@@ -227,5 +228,26 @@
             isLoading = false;
             StateHasChanged();
         }
+    }
+
+    // Data pasar berasal dari IMarketDataService (backend); di sini hanya disusun untuk tampilan.
+    private static MarketDataResponse MapIndicators(IEnumerable<MarketIndicatorDto> indicators)
+    {
+        var list = indicators.ToList();
+        MarketDetail? Detail(string symbol)
+        {
+            var i = list.FirstOrDefault(x => x.Symbol == symbol);
+            return i is null
+                ? null
+                : new MarketDetail { Price = Convert.ToDouble(i.Price), Percent = Convert.ToDouble(i.Change), IsUp = i.IsUp };
+        }
+
+        return new MarketDataResponse
+        {
+            Success = list.Count > 0,
+            Usd = Detail("USD/IDR"),
+            Ihsg = Detail("IHSG"),
+            BiRate = "-",
+        };
     }
 }

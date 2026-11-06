@@ -1,16 +1,13 @@
 @page "/reports/adjusting-journal"
 @rendermode InteractiveServer
 @attribute [Authorize]
+@inject IJournalsService Journals
+@inject UserContext User
+@inject NavigationManager Nav
 
-@using System.Security.Claims
 @using System.Globalization
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.EntityFrameworkCore
-@using AumoBackend.Data
-@using AumoBackend.Models
 
-@inject AppDbContext DbContext
-@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="container-fluid">
     <!-- Page Header -->
@@ -71,7 +68,7 @@
                                     var creditLines = orderedLines.Where(l => l.Credit > 0).ToList();
                                     var allLines = debitLines.Concat(creditLines).ToList();
 
-                                    var currentDateStr = entry.EntryDate.ToString("dd-MM-yyyy");
+                                    var currentDateStr = ViewFormat.Date(entry.EntryDate);
                                     var showDate = (currentDateStr != lastDate);
                                     if (showDate) { lastDate = currentDateStr; dateGroupIndex++; }
 
@@ -89,7 +86,7 @@
                                                 {
                                                     <div>
                                                         <span class="badge bg-secondary bg-opacity-25 border border-secondary text-white fw-bold px-2 py-1">
-                                                            @entry.EntryDate.ToString("dd-MM-yyyy")
+                                                            @ViewFormat.Date(entry.EntryDate)
                                                         </span>
                                                     </div>
                                                 }
@@ -114,14 +111,14 @@
                                                 }
                                             </td>
                                             <td class="align-top py-2 @(isDebit ? "fw-semibold text-white" : "ps-4 text-muted")">
-                                                @line.Account?.AccountName
+                                                @line.AccountName
                                             </td>
                                             <td class="small align-top py-2 text-muted">
                                                 @line.LineDescription
                                             </td>
                                             <td class="text-center align-top py-2">
                                                 <code class="text-warning">
-                                                    @line.Account?.ReferenceNumber
+                                                    @line.ReferenceNumber
                                                 </code>
                                             </td>
                                             <td class="text-end align-top py-2 text-success">
@@ -171,50 +168,24 @@
 @code {
     private static readonly CultureInfo Idr = new("id-ID");
 
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthStateTask { get; set; }
-
-    private Guid UserId { get; set; }
-    private List<JournalEntryDto> entries = new();
-    private Period? selectedPeriod;
+    private List<JournalReportEntryDto> entries = new();
+    private PeriodDto? selectedPeriod;
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthStateTask != null)
+        var userId = await User.GetUserIdAsync();
+        if (userId == Guid.Empty)
         {
-            var authState = await AuthStateTask;
-            var user = authState.User;
-
-            if (user.Identity?.IsAuthenticated == true)
-            {
-                var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (Guid.TryParse(userIdClaim, out var parsedGuid))
-                {
-                    UserId = parsedGuid;
-                }
-            }
-        }
-
-        if (UserId == Guid.Empty) return;
-
-        selectedPeriod = await SelectedPeriodHelper.GetSelectedPeriodAsync(DbContext, UserId);
-
-        if (selectedPeriod == null)
-        {
-            entries = new List<JournalEntryDto>();
+            Nav.NavigateTo("/auth/login", true);
             return;
         }
 
-        entries = await DbContext.JournalEntries
-            .Include(j => j.Lines)
-                .ThenInclude(l => l.Account)
-            .Where(j => j.UserId == UserId
-                     && j.JournalType == "Adjusting"
-                     && j.EntryDate >= selectedPeriod.StartDate
-                     && j.EntryDate <= selectedPeriod.EndDate)
-            .OrderBy(j => j.EntryDate)
-            .ThenBy(j => j.CreatedAt)
-            .ThenBy(j => j.Id)
-            .ToListAsync();
+        var result = await Journals.GetJournalAsync(userId, "Adjusting");
+        selectedPeriod = result.HasPeriodSelected
+            ? new PeriodDto { PeriodName = result.SelectedPeriodName ?? string.Empty, IsClosed = result.IsPeriodClosed }
+            : null;
+        entries = result.Entries;
+        isLoading = false;
     }
 }

@@ -1,16 +1,13 @@
 @page "/chart-of-accounts"
 @rendermode InteractiveServer
 @attribute [Authorize]
+@inject IChartOfAccountsService Accounts
+@inject UserContext User
 
 @using System.Globalization
-@using System.Security.Claims
-@using global::AumoBackend.Models
 @using global::AumoBackend.DTOs
-@using global::AumoBackend.Services.ChartOfAccounts
 
-@inject IChartOfAccountsService AccountService
 @inject IJSRuntime JS
-@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Nav
 
 <PageTitle>Chart of Accounts</PageTitle>
@@ -79,7 +76,7 @@
                         </tr>
                     </thead>
                     <tbody class="border-top-0">
-                        @if (UserId == Guid.Empty)
+                        @if (isLoading)
                         {
                             <tr>
                                 <td colspan="7" class="text-center py-4 text-secondary">
@@ -270,7 +267,6 @@
 </div>
 
 @code {
-    private Guid UserId;
     private static readonly CultureInfo CultureId = new("id-ID");
 
     private static readonly string[] AccountTypes =
@@ -279,54 +275,41 @@
         "OperatingExpenses", "OtherIncome", "OtherExpenses"
     };
 
-    private List<ChartOfAccount> accounts = new();
+    private List<AccountItemDto> accounts = new();
     private string? successMessage;
     private string? errorMessage;
     private string searchText = string.Empty;
     private string categoryFilter = string.Empty;
 
-    private ChartOfAccount newAccount = new() { Role = "Default" };
-    private ChartOfAccount editAccount = new();
+    private AccountItemDto newAccount = new() { Role = "Default" };
+    private AccountItemDto editAccount = new();
+    private bool isLoading = true;
     private string? createError;
     private string? editError;
 
+    private Guid userId;
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true)
+        userId = await User.GetUserIdAsync();
+        if (userId == Guid.Empty)
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
-            {
-                UserId = parsedId;
-                await LoadAccountsAsync();
-                return;
-            }
+            Nav.NavigateTo("/auth/login", true);
+            return;
         }
 
-        Nav.NavigateTo("/Account/Login", true);
+        await LoadAccountsAsync();
+        isLoading = false;
     }
 
+    // Backend adalah SSOT daftar akun, nomor referensi, validasi, dan saldo.
     private async Task LoadAccountsAsync()
     {
-        if (UserId == Guid.Empty) return;
-        var response = await AccountService.GetAccountsAsync(UserId, null, null);
-        accounts = response.Accounts.Select(account => new ChartOfAccount
-        {
-            Id = account.Id,
-            ReferenceNumber = account.ReferenceNumber,
-            AccountName = account.AccountName,
-            Type = account.Type,
-            Role = account.Role,
-            IsActive = account.IsActive,
-            Balance = account.Balance,
-            UserId = this.UserId
-        }).ToList();
+        var result = await Accounts.GetAccountsAsync(userId, null, null);
+        accounts = result.Accounts.ToList();
     }
 
-    private IEnumerable<ChartOfAccount> FilteredAccounts => accounts.Where(a =>
+    private IEnumerable<AccountItemDto> FilteredAccounts => accounts.Where(a =>
         (string.IsNullOrWhiteSpace(searchText)
             || a.AccountName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
             || a.ReferenceNumber.ToString().Contains(searchText))
@@ -344,7 +327,7 @@
         _ => type
     };
 
-    private string GetLedgerUrl(ChartOfAccount account)
+    private string GetLedgerUrl(AccountItemDto account)
     {
         return $"/reports/general-ledger#account-{account.Id}";
     }
@@ -358,9 +341,10 @@
             ReferenceNumber = newAccount.ReferenceNumber,
             AccountName = newAccount.AccountName,
             Type = newAccount.Type,
-            Role = newAccount.Role
+            Role = newAccount.Role,
         };
-        var result = await AccountService.CreateAccountAsync(UserId, request);
+
+        var result = await Accounts.CreateAccountAsync(userId, request);
         if (!result.IsSuccess)
         {
             createError = result.Message;
@@ -369,14 +353,14 @@
 
         successMessage = $"Account '{newAccount.AccountName}' successfully created.";
         await JS.InvokeVoidAsync("aumoModal.hide", "addAccountModal");
-        newAccount = new ChartOfAccount { Role = "Default" };
+        newAccount = new AccountItemDto { Role = "Default" };
         await LoadAccountsAsync();
     }
 
-    private void OpenEditModal(ChartOfAccount account)
+    private void OpenEditModal(AccountItemDto account)
     {
         editError = null;
-        editAccount = new ChartOfAccount
+        editAccount = new AccountItemDto
         {
             Id = account.Id,
             ReferenceNumber = account.ReferenceNumber,
@@ -384,7 +368,6 @@
             Type = account.Type,
             Role = account.Role,
             IsActive = account.IsActive,
-            UserId = account.UserId
         };
     }
 
@@ -392,14 +375,17 @@
     {
         editError = null;
 
+        // IsActive wajib dikirim: backend memperlakukan nilai yang hilang sebagai default kontrak.
         var request = new UpdateAccountRequestDto
         {
             ReferenceNumber = editAccount.ReferenceNumber,
             AccountName = editAccount.AccountName,
             Type = editAccount.Type,
-            Role = editAccount.Role
+            Role = editAccount.Role,
+            IsActive = editAccount.IsActive,
         };
-        var result = await AccountService.UpdateAccountAsync(UserId, editAccount.Id, request);
+
+        var result = await Accounts.UpdateAccountAsync(userId, editAccount.Id, request);
         if (!result.IsSuccess)
         {
             editError = result.Message;
@@ -411,13 +397,13 @@
         await LoadAccountsAsync();
     }
 
-    private async Task ConfirmAndDelete(ChartOfAccount account)
+    private async Task ConfirmAndDelete(AccountItemDto account)
     {
         var confirmed = await JS.InvokeAsync<bool>("confirm",
             $"Delete account \"{account.AccountName}\"? This action cannot be undone.");
         if (!confirmed) return;
 
-        var result = await AccountService.DeleteAccountAsync(UserId, account.Id);
+        var result = await Accounts.DeleteAccountAsync(userId, account.Id);
         if (!result.IsSuccess)
         {
             errorMessage = result.Message;

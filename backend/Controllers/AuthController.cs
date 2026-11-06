@@ -25,6 +25,27 @@ public class AuthController : ControllerBase
         this.signInManager = signInManager;
     }
 
+    // POST /api/v1/auth/register -> membuat akun lalu langsung login (mengembalikan token seperti login klien non-cookie).
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var errors = await this.authService.RegisterAsync(request);
+        if (errors.Count > 0)
+        {
+            return this.BadRequest(new { success = false, message = string.Join(" ", errors), errors });
+        }
+
+        return await this.Login(new LoginRequest
+        {
+            Email = request.Email,
+            Password = request.Password,
+            IsMobileClient = true,
+            UserAgent = this.Request.Headers["User-Agent"].ToString(),
+            OperatingSystem = "Web",
+        });
+    }
+
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)

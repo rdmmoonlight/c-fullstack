@@ -18,9 +18,9 @@ public class DashboardViewModel
 
     public string ActivePeriodName { get; set; } = string.Empty;
 
-    public DateTime ActivePeriodStart { get; set; }
+    public DateTime? ActivePeriodStart { get; set; }
 
-    public DateTime ActivePeriodEnd { get; set; }
+    public DateTime? ActivePeriodEnd { get; set; }
 
     public decimal TotalCashAndEquivalents { get; set; }
 

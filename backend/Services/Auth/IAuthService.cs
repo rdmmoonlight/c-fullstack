@@ -21,6 +21,9 @@ public interface IAuthService
 
     Task<AuthResponseDto?> ProcessGoogleLoginAsync(GoogleLoginRequest request);
 
+    /// <summary>Membuat akun baru. Mengembalikan daftar error (kosong bila berhasil).</summary>
+    Task<IReadOnlyList<string>> RegisterAsync(RegisterRequest request);
+
     AuthenticationProperties ConfigureGoogleRedirectProperties(string redirectUrl);
 
     Task<string?> ProcessGoogleCallbackAsync(ClaimsPrincipal principal, string loginProvider, string providerKey);

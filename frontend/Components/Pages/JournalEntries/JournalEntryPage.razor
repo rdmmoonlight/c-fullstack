@@ -4,8 +4,7 @@
 @page "/journal-entry/edit/{EntryId:int}"
 
 @using System.Globalization
-@using System.Security.Claims
-@using AumoBackend.Models
+@using AumoBackend.DTOs.Reports
 @using AumoBackend.Services.JournalEntries
 
 @rendermode InteractiveServer
@@ -14,7 +13,8 @@
 @inject IJournalEntryService JournalService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
-@inject AuthenticationStateProvider AuthStateProvider
+@inject UserContext User
+@inject IChartOfAccountsService Accounts
 
 <PageTitle>@(IsEdit ? "Edit Journal Entry" : "Create Journal Entry")</PageTitle>
 
@@ -240,7 +240,7 @@
     private bool IsEdit => EntryId.HasValue;
 
     private List<LineItem> lines = new();
-    private List<ChartOfAccount> availableAccounts = new();
+    private List<AccountItemDto> availableAccounts = new();
     private string journalType = "General";
     private DateTime entryDate = DateTime.Today;
     private string transactionNumber = string.Empty;
@@ -254,79 +254,47 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true)
-        {
-            var claim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (Guid.TryParse(claim, out var parsedId))
-            {
-                UserId = parsedId;
-            }
-        }
-
+        UserId = await User.GetUserIdAsync();
         if (UserId == Guid.Empty)
         {
             Nav.NavigateTo("/auth/login", true);
             return;
         }
 
+        // Daftar akun aktif berasal dari IChartOfAccountsService (backend).
+        var accountList = await Accounts.GetAccountsAsync(UserId, null, null);
+        availableAccounts = accountList.Accounts.Where(a => a.IsActive).OrderBy(a => a.ReferenceNumber).ToList();
+
         if (IsEdit)
         {
-            dynamic? result = await GetJournalEntryForEditAsync(UserId, EntryId!.Value);
-            if (result is null)
+            var entry = await JournalService.GetByIdAsync(UserId, EntryId!.Value);
+            if (entry is null)
             {
                 lockedMessage = "The selected journal entry could not be loaded.";
                 return;
             }
 
-            if (!result.IsSuccess)
+            if (entry.IsLocked)
             {
-                lockedMessage = result.Message;
+                lockedMessage = $"Journal entry {entry.TransactionNumber} falls within a closed period and cannot be modified.";
                 return;
             }
 
-            transactionNumber = result.Data.TransactionNumber;
-            journalType = result.Data.JournalType;
-            entryDate = result.Data.EntryDate;
-            lines = result.Data.Lines;
+            transactionNumber = entry.TransactionNumber;
+            journalType = entry.JournalType;
+            entryDate = entry.EntryDate;
+            lines = entry.Lines.Select(l => new LineItem
+            {
+                AccountId = l.AccountId,
+                LineDescription = l.LineDescription,
+                Debit = l.Debit == 0 ? null : l.Debit,
+                Credit = l.Credit == 0 ? null : l.Credit,
+            }).ToList();
         }
         else
         {
             ResetForm();
         }
-    }
-
-    private async Task<object?> GetJournalEntryForEditAsync(Guid userId, int entryId)
-    {
-        var methodName = new[]
-        {
-            "GetJournalEntryAsync",
-            "GetJournalEntryByIdAsync",
-            "GetByIdAsync",
-            "GetEntryAsync"
-        }.FirstOrDefault(name => JournalService.GetType().GetMethod(name, new[] { typeof(Guid), typeof(int) }) is not null);
-
-        if (methodName is null)
-        {
-            return null;
-        }
-
-        var methodInfo = JournalService.GetType().GetMethod(methodName, new[] { typeof(Guid), typeof(int) });
-        if (methodInfo is null)
-        {
-            return null;
-        }
-
-        var task = methodInfo.Invoke(JournalService, new object[] { userId, entryId }) as Task;
-        if (task is null)
-        {
-            return null;
-        }
-
-        await task.ConfigureAwait(false);
-        return task.GetType().GetProperty("Result")?.GetValue(task);
     }
 
     private void ResetForm()
@@ -371,26 +339,12 @@
         await Task.Delay(250);
         if (line.SearchVersion != myVersion) return;
 
-        var results = await SearchDescriptionsAsync(query);
+        var results = await JournalService.SearchLineDescriptionsAsync(UserId, query);
         if (line.SearchVersion != myVersion) return;
 
         line.Suggestions = results;
         line.ShowSuggestions = results.Any();
-        StateHasChanged();
-    }
-
-    private async Task<List<string>> SearchDescriptionsAsync(string query)
-    {
-        var method = JournalService.GetType().GetMethod(
-            "SearchDescriptionsAsync", new[] { typeof(Guid), typeof(string) });
-        if (method?.Invoke(JournalService, new object[] { UserId, query }) is not Task task)
-        {
-            return new List<string>();
-        }
-
-        await task;
-        return task.GetType().GetProperty("Result")?.GetValue(task) as List<string>
-            ?? new List<string>();
+        await InvokeAsync(StateHasChanged);
     }
 
     private void SelectSuggestion(LineItem line, string text)
@@ -404,73 +358,52 @@
         validationErrors.Clear();
         successMessage = null;
 
-        var saveMethod = JournalService.GetType().GetMethods()
-            .FirstOrDefault(method => method.Name == "SaveJournalEntryAsync"
-                && method.GetParameters() is var parameters
-                && parameters.Length == 2
-                && parameters[0].ParameterType == typeof(Guid));
-        if (saveMethod is null)
-        {
-            validationErrors.Add("The journal entry service does not support saving entries.");
-            return;
-        }
-
-        var requestType = saveMethod.GetParameters()[1].ParameterType;
-        var request = Activator.CreateInstance(requestType);
-        if (request is null)
-        {
-            validationErrors.Add("The journal entry request could not be created.");
-            return;
-        }
-
-        SetRequestValue(request, "EntryId", EntryId);
-        SetRequestValue(request, "JournalType", journalType);
-        SetRequestValue(request, "EntryDate", entryDate);
-        SetRequestValue(request, "Lines", lines);
-
-        if (saveMethod.Invoke(JournalService, new[] { (object)UserId, request }) is not Task saveTask)
-        {
-            validationErrors.Add("The journal entry could not be saved.");
-            return;
-        }
-
-        await saveTask;
-        var result = saveTask.GetType().GetProperty("Result")?.GetValue(saveTask);
-        var resultType = result?.GetType();
-        var isSuccess = resultType?.GetProperty("IsSuccess")?.GetValue(result) as bool? ?? false;
-        if (!isSuccess)
-        {
-            var isLocked = resultType?.GetProperty("IsLocked")?.GetValue(result) as bool? ?? false;
-            var message = resultType?.GetProperty("Message")?.GetValue(result)?.ToString();
-            if (isLocked)
+        var requestLines = lines
+            .Select((l, index) => new CreateGeneralJournalLineRequest
             {
-                lockedMessage = message;
-            }
-            else
-            {
-                validationErrors = resultType?.GetProperty("Errors")?.GetValue(result) as List<string>
-                    ?? new List<string> { message ?? "The journal entry could not be saved." };
-            }
-            return;
-        }
+                AccountId = l.AccountId,
+                LineDescription = l.LineDescription,
+                Debit = l.Debit ?? 0,
+                Credit = l.Credit ?? 0,
+                LineOrder = index + 1,
+            })
+            .ToList();
 
-        if (IsEdit)
+        try
         {
-            Nav.NavigateTo("/reports/general-journal");
-        }
-        else
-        {
-            successMessage = resultType?.GetProperty("Message")?.GetValue(result)?.ToString() ?? string.Empty;
+            // Validasi (akun aktif, saldo seimbang, periode tertutup) dilakukan IJournalEntryService.
+            if (IsEdit)
+            {
+                await JournalService.UpdateAsync(UserId, EntryId!.Value, new UpdateGeneralJournalRequest
+                {
+                    JournalType = journalType,
+                    EntryDate = entryDate,
+                    TransactionNumber = transactionNumber,
+                    Status = "Posted",
+                    Lines = requestLines,
+                });
+
+                Nav.NavigateTo("/reports/general-journal");
+                return;
+            }
+
+            var created = await JournalService.CreateAsync(UserId, new CreateGeneralJournalRequest
+            {
+                JournalType = journalType,
+                EntryDate = entryDate,
+                Lines = requestLines,
+            });
+
+            successMessage = $"Journal entry {created.TransactionNumber} has been posted.";
             ResetForm();
         }
-    }
-
-    private static void SetRequestValue(object request, string propertyName, object? value)
-    {
-        var property = request.GetType().GetProperty(propertyName);
-        if (property?.CanWrite == true && (value is null || property.PropertyType.IsInstanceOfType(value)))
+        catch (InvalidOperationException ex) when (ex.Message.Contains("closed", StringComparison.OrdinalIgnoreCase))
         {
-            property.SetValue(request, value);
+            lockedMessage = ex.Message;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or KeyNotFoundException)
+        {
+            validationErrors = new List<string> { ex.Message };
         }
     }
 

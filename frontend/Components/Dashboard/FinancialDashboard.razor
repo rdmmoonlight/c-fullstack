@@ -3,14 +3,13 @@
 @attribute [Authorize]
 
 @using System.Globalization
-@using System.Security.Claims
 @using AumoBackend.Models
 @using AumoBackend.Services.Dashboard
 @using AumoFinance.Components.Dashboard
 @inject IDashboardService DataService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
-@inject AuthenticationStateProvider AuthStateProvider
+@inject UserContext User
 
 <style>
     .tracking-wider {
@@ -171,7 +170,7 @@
                         </div>
                     </div>
 
-                    @if (model.ExpenseAccountsList.Any())
+                    @if (model.ExpenseCategoryLabels.Any())
                     {
                         <div class="chart-container"><canvas id="expenseDoughnut"></canvas></div>
                     }
@@ -194,35 +193,27 @@
 @code {
     private Guid UserId;
     private static readonly CultureInfo Idr = new("id-ID");
-    private DashboardDataDto model = new();
+    private DashboardViewModel model = new();
     private string periodType = "monthly";
     private bool chartsNeedRender;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true)
+        UserId = await User.GetUserIdAsync();
+        if (UserId == Guid.Empty)
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
-            {
-                UserId = parsedId;
-
-                var uri = new Uri(Nav.Uri);
-                var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-                if (query.TryGetValue("period", out var p) && p.ToString().Equals("annual", StringComparison.OrdinalIgnoreCase))
-                {
-                    periodType = "annual";
-                }
-
-                await LoadDashboardAsync();
-                return;
-            }
+            Nav.NavigateTo("/auth/login", true);
+            return;
         }
 
-        Nav.NavigateTo("/Account/Login", true);
+        var uri = new Uri(Nav.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        if (query.TryGetValue("period", out var p) && p.ToString().Equals("annual", StringComparison.OrdinalIgnoreCase))
+        {
+            periodType = "annual";
+        }
+
+        await LoadDashboardAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -268,7 +259,9 @@
     private async Task LoadDashboardAsync()
     {
         if (UserId == Guid.Empty) return;
-        model = await DashboardService.GetDashboardDataAsync(UserId, periodType);
+        // Seluruh angka dashboard dihitung IDashboardService (backend).
+        var data = await DataService.GetDashboardDataAsync(UserId, periodType);
+        model = DashboardMapper.ToViewModel(UserId, data);
         chartsNeedRender = true;
         StateHasChanged();
     }

@@ -4,12 +4,13 @@
 @attribute [Authorize]
 
 @using System.Globalization
-@using System.Security.Claims
 @using AumoBackend.Services.Tools
 
 @inject IToolsService ToolsService
 @inject IJSRuntime JS
-@inject AuthenticationStateProvider AuthStateProvider
+@inject UserContext User
+@inject JournalImportWorkflow ImportWorkflow
+@inject IGeneralLedgersService Ledgers
 @inject NavigationManager Nav
 
 <PageTitle>Tools &amp; Utilities</PageTitle>
@@ -255,27 +256,18 @@
     private const long MaxFileSizeBytes = 20 * 1024 * 1024; // 20 MB
 
     private IBrowserFile? selectedFile;
-    private JournalImportRequestDto? parseResult;
+    private JournalImportPreview? parseResult;
     private string? successMessage;
     private string? errorMessage;
     private bool isBusy;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated == true)
+        UserId = await User.GetUserIdAsync();
+        if (UserId == Guid.Empty)
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var parsedId))
-            {
-                UserId = parsedId;
-                return;
-            }
+            Nav.NavigateTo("/auth/login", true);
         }
-
-        Nav.NavigateTo("/auth/login", true);
     }
 
     private void OnFileSelected(InputFileChangeEventArgs e)
@@ -300,14 +292,14 @@
             }
             stream.Position = 0;
 
-            var result = await ToolsService.ParseJournalExcelAsync(UserId, stream);
-            if (!result.IsSuccess)
+            var (preview, error) = await ImportWorkflow.BuildPreviewAsync(UserId, stream);
+            if (preview is null)
             {
-                errorMessage = result.Message;
+                errorMessage = error;
                 return;
             }
 
-            parseResult = result;
+            parseResult = preview;
             await JS.InvokeVoidAsync("aumoModal.show", "indexPreviewModal");
         }
         catch (Exception ex)
@@ -331,14 +323,10 @@
         isBusy = true;
         try
         {
-            var result = await ToolsService.ImportJournalEntriesAsync(UserId, parseResult.Transactions);
-            if (!result.IsSuccess)
-            {
-                errorMessage = result.Message;
-                return;
-            }
-
-            successMessage = result.Message;
+            var result = await ImportWorkflow.ImportAsync(UserId, parseResult);
+            successMessage = string.IsNullOrWhiteSpace(result.Message)
+                ? $"{result.ImportedEntriesCount} journal entries imported."
+                : result.Message;
             await JS.InvokeVoidAsync("aumoModal.hide", "indexPreviewModal");
             parseResult = null;
             selectedFile = null;
@@ -361,10 +349,10 @@
         isBusy = true;
         try
         {
-            var result = await ToolsService.RecalculateLedgerAsync(UserId);
-            if (result.IsSuccess)
+            var result = await Ledgers.RefreshGeneralLedgersAsync(UserId);
+            if (result.Success)
             {
-                successMessage = result.Message;
+                successMessage = string.IsNullOrWhiteSpace(result.Message) ? "Ledger balances recalculated." : result.Message;
             }
             else
             {
@@ -381,13 +369,19 @@
         }
     }
 
-    private void HandleDownloadJournalTemplate()
+    private async Task HandleDownloadJournalTemplate()
     {
-        Nav.NavigateTo("/api/Tools/DownloadJournalTemplate", forceLoad: true);
+        // Template dibuat IToolsService (backend) agar format kolom selalu sama dengan parser impor.
+        var bytes = ToolsService.GenerateJournalTemplate();
+        await JS.InvokeVoidAsync(
+            "aumoDownload",
+            "journal-template.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            Convert.ToBase64String(bytes));
     }
 
     private void HandleBackupDatabase()
     {
-        Nav.NavigateTo("/api/Tools/BackupDatabase", true);
+        errorMessage = "Export all data is not available in the web UI yet.";
     }
 }
