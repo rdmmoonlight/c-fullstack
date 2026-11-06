@@ -1,9 +1,10 @@
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
 @using MudBlazor
+@using AumoFinance.Components.Layout.Theme
 
-@* Daftarkan custom theme dan aktifkan mode dark *@
-<MudThemeProvider Theme="_aumoTheme" IsDarkMode="true" />
+@* Menggunakan AumoTheme dari namespace AumoFinance.Components.Layout.Theme *@
+<MudThemeProvider Theme="AumoTheme.Theme" IsDarkMode="true" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -31,32 +32,3 @@
     </div>
 
 </div>
-
-@code {
-    private readonly MudTheme _aumoTheme = new MudTheme()
-    {
-        PaletteDark = new PaletteDark()
-        {
-            Primary = "#a855f7", // Warna Ungu Utama
-            Secondary = "#ec4899", // Warna Merah Muda / Accent
-            Background = "#0f0c1b", // Dark Background Utama
-            Surface = "#1a1625", // Card / Paper / Sidebar Background
-            AppbarBackground = "#1a1625",
-            DrawerBackground = "#1a1625",
-            TextPrimary = "#ffffff", // Teks Utama Putih
-            TextSecondary = "#b3a5d0", // Teks Sekunder Muted
-            Divider = "rgba(255, 255, 255, 0.12)",
-            Success = "#10b981", // Status Hijau / LED
-            Info = "#3b82f6",
-            Warning = "#f59e0b",
-            Error = "#ef4444"
-        },
-        Typography = new Typography()
-        {
-            Default = new DefaultTypography()
-            {
-                FontFamily = new[] { "Roboto", "Segoe UI", "sans-serif" }
-            }
-        }
-    };
-}
