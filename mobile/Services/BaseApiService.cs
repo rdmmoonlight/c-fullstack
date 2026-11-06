@@ -11,7 +11,7 @@ namespace AumoFinance.Services;
 public abstract class BaseApiService
 {
     // REVISI: Menggunakan host Render
-    public const string BaseUrl = "https://aumo.onrender.com";
+    public const string BaseUrl = "https://aumoc.onrender.com";
     protected const string AuthTokenKey = "auth_token_jwt";
 
     protected static readonly HttpClient HttpClient = new HttpClient
