@@ -1,3 +1,4 @@
+@rendermode InteractiveServer
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
 @using MudBlazor
@@ -12,12 +13,10 @@
                 {
                     <MudText Typo="Typo.subtitle1" Class="fw-bold text-primary">Aumo Finance</MudText>
                 }
-                <MudTooltip Text="@(_isCollapsed ? "Expand Sidebar" : "Collapse Sidebar")">
-                    <MudIconButton Icon="@(_isCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)"
-                                   Color="Color.Inherit"
-                                   OnClick="ToggleSidebar"
-                                   Size="Size.Small" />
-                </MudTooltip>
+                <MudIconButton Icon="@(_isCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)"
+                               Color="Color.Inherit"
+                               OnClick="ToggleSidebar"
+                               Size="Size.Small" />
             </div>
 
             <MudDivider Class="mb-2" />
@@ -38,7 +37,7 @@
                     @if (!_isCollapsed) { <text>Journal Entry</text> }
                 </MudNavLink>
 
-                <!-- REPORTS GROUP -->
+                <!-- REPORTS GROUP (Diset Expanded="true" secara default agar submenu langsung muncul) -->
                 @if (!_isCollapsed)
                 {
                     <MudNavGroup Title="Reports" Icon="@Icons.Material.Filled.Folder" @bind-Expanded="_reportsExpanded">
@@ -59,9 +58,7 @@
                 }
                 else
                 {
-                    <MudTooltip Text="Reports">
-                        <MudNavLink Href="/reports/general-journal" Icon="@Icons.Material.Filled.Folder" />
-                    </MudTooltip>
+                    <MudNavLink Href="/reports/general-journal" Icon="@Icons.Material.Filled.Folder" />
                 }
 
                 <MudNavLink Href="/chart-of-accounts" Icon="@Icons.Material.Filled.AccountTree">
@@ -105,9 +102,7 @@
                 }
                 else
                 {
-                    <MudTooltip Text="Settings">
-                        <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.AccountCircle" />
-                    </MudTooltip>
+                    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.AccountCircle" />
                 }
 
             </MudNavMenu>
@@ -117,7 +112,7 @@
 
 @code {
     private bool _isCollapsed = false;
-    private bool _reportsExpanded = false;
+    private bool _reportsExpanded = true; // Set true secara default agar terbuka saat load awal
     private bool _userGroupExpanded = false;
 
     private void ToggleSidebar()
