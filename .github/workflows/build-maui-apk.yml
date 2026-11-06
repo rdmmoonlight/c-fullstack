@@ -31,7 +31,18 @@ jobs:
       run: dotnet restore mobile
 
     - name: Build Android APK (net10.0-android36.0)
-      run: dotnet publish mobile -c Release -f net10.0-android36.0 --no-restore -p:AndroidPackageFormat=apk
+      shell: pwsh
+      run: |
+        dotnet publish mobile -c Release -f net10.0-android36.0 --no-restore -p:AndroidPackageFormat=apk -v:minimal -nologo 2>&1 | Tee-Object -FilePath build.log
+        $code = $LASTEXITCODE
+        if ($code -ne 0) {
+          # Tampilkan ringkasan error sebagai annotation agar mudah dibaca
+          $errs = Select-String -Path build.log -Pattern 'error' | ForEach-Object { $_.Line.Trim() } | Select-Object -Unique -First 30
+          $msg = ($errs -join "`n").Replace('%','%25').Replace("`r",'').Replace("`n",'%0A')
+          if ($msg.Length -gt 6000) { $msg = $msg.Substring(0,6000) }
+          Write-Host "::error title=Ringkasan error build::$msg"
+        }
+        exit $code
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
