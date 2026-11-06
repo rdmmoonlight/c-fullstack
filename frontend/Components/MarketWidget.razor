@@ -2,6 +2,8 @@
 @using AumoBackend.Services
 @inject IMarketDataService MarketService
 
+@rendermode InteractiveServer
+
 <div class="market-futuristic-card mx-auto mb-4 p-3 rounded-4">
     <div class="card-glass-bg"></div>
     
@@ -26,162 +28,168 @@
                         <span class="style-label text-uppercase">USD / IDR</span>
                     </div>
                     <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                        <span class="fw-bold style-value text-glow text-nowrap">Rp. @(marketData.Usd?.Price.ToString("N2", new System.Globalization.CultureInfo("id-ID")))</span>
-                        <span class="badge badge-futuristic @(marketData.Usd?.IsUp == true ? "badge-up" : "badge-down") text-nowrap">
-                            <i class="bi @(marketData.Usd?.IsUp == true ? "bi-arrow-up-short" : "bi-arrow-down-short")"></i>
-                            @(marketData.Usd?.IsUp == true ? "+" : "")@(marketData.Usd?.Percent.ToString("F2", new System.Globalization.CultureInfo("id-ID")))%
-                        </span>
+                        <span class="fw-bold style-value text-glow text-nowrap">Rp. @(marketData.Usd?.Price.ToString("N2",
+                                                    new System.Globalization.CultureInfo("id-ID")))</span>
+                            <span
+                                class="badge badge-futuristic @(marketData.Usd?.IsUp == true ? "badge-up" : "badge-down") text-nowrap">
+                                <i class="bi @(marketData.Usd?.IsUp == true ? "bi-arrow-up-short" : "bi-arrow-down-short")"></i>
+                                @(marketData.Usd?.IsUp == true ? "+" : "")@(marketData.Usd?.Percent.ToString("F2", new
+                                System.Globalization.CultureInfo("id-ID")))%
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- IHSG (IDX COMPOSITE) -->
-            <div class="col-12 col-md-4 border-end-futuristic">
-                <div class="d-flex flex-column align-items-center justify-content-center px-1">
-                    <div class="d-flex align-items-center gap-1 mb-1">
-                        <span class="indicator-dot @(marketData.Ihsg?.IsUp == true ? "dot-up" : "dot-down")"></span>
-                        <span class="style-label text-uppercase">IDX Composite</span>
+                <!-- IHSG (IDX COMPOSITE) -->
+                <div class="col-12 col-md-4 border-end-futuristic">
+                    <div class="d-flex flex-column align-items-center justify-content-center px-1">
+                        <div class="d-flex align-items-center gap-1 mb-1">
+                            <span class="indicator-dot @(marketData.Ihsg?.IsUp == true ? "dot-up" : "dot-down")"></span>
+                            <span class="style-label text-uppercase">IDX Composite</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                            <span class="fw-bold style-value text-glow text-nowrap">@(marketData.Ihsg?.Price.ToString("N2", new
+                                                        System.Globalization.CultureInfo("id-ID")))</span>
+                                <span
+                                    class="badge badge-futuristic @(marketData.Ihsg?.IsUp == true ? "badge-up" : "badge-down") text-nowrap">
+                                    <i
+                                    class="bi @(marketData.Ihsg?.IsUp == true ? "bi-arrow-up-short" : "bi-arrow-down-short")"></i>
+                                    @(marketData.Ihsg?.IsUp == true ? "+" : "")@(marketData.Ihsg?.Percent.ToString("F2", new
+                                    System.Globalization.CultureInfo("id-ID")))%
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                        <span class="fw-bold style-value text-glow text-nowrap">@(marketData.Ihsg?.Price.ToString("N2", new System.Globalization.CultureInfo("id-ID")))</span>
-                        <span class="badge badge-futuristic @(marketData.Ihsg?.IsUp == true ? "badge-up" : "badge-down") text-nowrap">
-                            <i class="bi @(marketData.Ihsg?.IsUp == true ? "bi-arrow-up-short" : "bi-arrow-down-short")"></i>
-                            @(marketData.Ihsg?.IsUp == true ? "+" : "")@(marketData.Ihsg?.Percent.ToString("F2", new System.Globalization.CultureInfo("id-ID")))%
-                        </span>
+
+                    <!-- BI-RATE -->
+                    <div class="col-12 col-md-4">
+                        <div class="d-flex flex-column align-items-center justify-content-center px-1">
+                            <div class="d-flex align-items-center gap-1 mb-1">
+                                <span class="indicator-dot dot-info"></span>
+                                <span class="style-label text-uppercase">BI-Rate</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <span class="fw-bold style-value text-info-glow text-nowrap">@(marketData.BiRate)</span>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-            </div>
-
-            <!-- BI-RATE -->
-            <div class="col-12 col-md-4">
-                <div class="d-flex flex-column align-items-center justify-content-center px-1">
-                    <div class="d-flex align-items-center gap-1 mb-1">
-                        <span class="indicator-dot dot-info"></span>
-                        <span class="style-label text-uppercase">BI-Rate</span>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-center gap-2">
-                        <span class="fw-bold style-value text-info-glow text-nowrap">@(marketData.BiRate)</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    }
+            }
     else
-    {
-        <!-- State: Error / Fallback -->
-        <div class="d-flex align-items-center justify-content-center text-muted small py-1 gap-2 position-relative z-1">
-            <i class="bi bi-exclamation-triangle text-warning-glow"></i>
-            <span class="style-loading-text">Market indicators temporarily offline.</span>
+            {
+                <!-- State: Error / Fallback -->
+                <div class="d-flex align-items-center justify-content-center text-muted small py-1 gap-2 position-relative z-1">
+                    <i class="bi bi-exclamation-triangle text-warning-glow"></i>
+                    <span class="style-loading-text">Market indicators temporarily offline.</span>
+                </div>
+            }
         </div>
-    }
-</div>
 
-<style>
-    .market-futuristic-card {
-        position: relative;
-        max-width: 720px;
-        background: rgba(18, 24, 38, 0.45);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
+        <style>
+            .market-futuristic-card {
+                position: relative;
+                max-width: 720px;
+                background: rgba(18, 24, 38, 0.45);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+                overflow: hidden;
+                transition: all 0.3s ease;
+            }
 
-    .market-futuristic-card:hover {
-        border-color: rgba(56, 189, 248, 0.25);
-        box-shadow: 0 8px 32px 0 rgba(14, 165, 233, 0.15);
-    }
+            .market-futuristic-card:hover {
+                border-color: rgba(56, 189, 248, 0.25);
+                box-shadow: 0 8px 32px 0 rgba(14, 165, 233, 0.15);
+            }
 
-    .style-label {
-        font-size: 0.65rem;
-        letter-spacing: 0.1em;
-        font-weight: 700;
-        color: rgba(148, 163, 184, 0.8);
-    }
+            .style-label {
+                font-size: 0.65rem;
+                letter-spacing: 0.1em;
+                font-weight: 700;
+                color: rgba(148, 163, 184, 0.8);
+            }
 
-    .style-value {
-        font-size: 0.95rem;
-        letter-spacing: -0.01em;
-        white-space: nowrap;
-    }
+            .style-value {
+                font-size: 0.95rem;
+                letter-spacing: -0.01em;
+                white-space: nowrap;
+            }
 
-    .indicator-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        display: inline-block;
-        flex-shrink: 0;
-    }
+            .indicator-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                display: inline-block;
+                flex-shrink: 0;
+            }
 
-    .dot-up {
-        background-color: #10b981;
-        box-shadow: 0 0 8px #10b981;
-    }
+            .dot-up {
+                background-color: #10b981;
+                box-shadow: 0 0 8px #10b981;
+            }
 
-    .dot-down {
-        background-color: #ef4444;
-        box-shadow: 0 0 8px #ef4444;
-    }
+            .dot-down {
+                background-color: #ef4444;
+                box-shadow: 0 0 8px #ef4444;
+            }
 
-    .dot-info {
-        background-color: #38bdf8;
-        box-shadow: 0 0 8px #38bdf8;
-    }
+            .dot-info {
+                background-color: #38bdf8;
+                box-shadow: 0 0 8px #38bdf8;
+            }
 
-    .badge-futuristic {
-        font-size: 0.675rem;
-        font-weight: 600;
-        padding: 0.25em 0.5em;
-        border-radius: 20px;
-        letter-spacing: 0.02em;
-        white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        gap: 1px;
-    }
+            .badge-futuristic {
+                font-size: 0.675rem;
+                font-weight: 600;
+                padding: 0.25em 0.5em;
+                border-radius: 20px;
+                letter-spacing: 0.02em;
+                white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                gap: 1px;
+            }
 
-    .badge-up {
-        background: rgba(16, 185, 129, 0.12);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-    }
+            .badge-up {
+                background: rgba(16, 185, 129, 0.12);
+                color: #34d399;
+                border: 1px solid rgba(16, 185, 129, 0.25);
+            }
 
-    .badge-down {
-        background: rgba(239, 68, 68, 0.12);
-        color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.25);
-    }
+            .badge-down {
+                background: rgba(239, 68, 68, 0.12);
+                color: #f87171;
+                border: 1px solid rgba(239, 68, 68, 0.25);
+            }
 
-    .text-glow {
-        text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
-    }
+            .text-glow {
+                text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+            }
 
-    .text-info-glow {
-        color: #38bdf8;
-        text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
-    }
+            .text-info-glow {
+                color: #38bdf8;
+                text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+            }
 
-    .spinner-glow {
-        filter: drop-shadow(0 0 6px #0ea5e9);
-    }
+            .spinner-glow {
+                filter: drop-shadow(0 0 6px #0ea5e9);
+            }
 
-    /* CS0103 Fix: Gunakan @@media agar tidak terbaca sebagai syntax Razor C# */
-    @@media (min-width: 768px) {
-        .border-end-futuristic {
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    }
+            @@media (min-width: 768px) {
+                .border-end-futuristic {
+                    border-right: 1px solid rgba(255, 255, 255, 0.08);
+                }
+            }
 
-    @@media (max-width: 767.98px) {
-        .border-end-futuristic {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 0.75rem;
-        }
-    }
-</style>
+            @@media (max-width: 767.98px) {
+                .border-end-futuristic {
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                    padding-bottom: 0.75rem;
+                }
+            }
+        </style>
 
 @code {
     private static MarketDataResponse? cachedMarketData;
@@ -192,14 +200,17 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // 1. Initial Load
         if (cachedMarketData != null && DateTime.Now - lastFetchTime < TimeSpan.FromMinutes(5))
         {
             marketData = cachedMarketData;
             isLoading = false;
-            return;
+        }
+        else
+        {
+            await LoadDataAsync();
         }
 
-        await LoadDataAsync();
     }
 
     private async Task LoadDataAsync()
@@ -217,7 +228,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MarketWidget Error] {ex.Message}");
+            Console.WriteLine($"[MarketWidget Load Error] {ex.Message}");
             if (cachedMarketData != null)
             {
                 marketData = cachedMarketData;
@@ -230,7 +241,6 @@
         }
     }
 
-    // Data pasar berasal dari IMarketDataService (backend); di sini hanya disusun untuk tampilan.
     private static MarketDataResponse MapIndicators(IEnumerable<MarketIndicatorDto> indicators)
     {
         var list = indicators.ToList();

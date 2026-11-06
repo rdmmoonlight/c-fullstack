@@ -1,64 +1,34 @@
-# ==========================================
-# 1. Build Stage (SDK .NET 10)
-# ==========================================
+# ==========================================================
+# Dockerfile root: membangun /frontend (Blazor Server).
+# /frontend mereferensikan /backend (ProjectReference), jadi satu image
+# sudah berisi UI + seluruh service bisnis backend. Tidak butuh nginx.
+#
+# Build : docker build -t aumo .
+# Run   : docker run -p 8080:8080 --env-file .env aumo
+# ==========================================================
+
+# 1. Build (SDK .NET 10)
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Copy file solusi dan project untuk memanfaat simpanan cache layer (dotnet restore)
-COPY AumoFinance.slnx ./
-COPY backend/AumoBackend.csproj ./backend/
-COPY frontend/AumoBlazor.csproj ./frontend/
-COPY backend-fs/backend-fs.fsproj ./backend-fs/
+# Salin csproj dulu agar layer restore ter-cache
+COPY ["frontend/AumoBlazor.csproj", "frontend/"]
+COPY ["backend/AumoBackend.csproj", "backend/"]
+RUN dotnet restore "frontend/AumoBlazor.csproj"
 
-# Restore dependensi untuk semua proyek
-RUN dotnet restore
+# Salin sisa source (lihat .dockerignore)
+COPY backend/ backend/
+COPY frontend/ frontend/
+WORKDIR /src/frontend
+RUN dotnet publish "AumoBlazor.csproj" -c Release -o /app/publish /p:UseAppHost=false --no-restore
 
-# Copy seluruh source code
-COPY . .
-
-# Publish C# Backend
-RUN dotnet publish backend/AumoBackend.csproj -c Release -o /app/publish/backend
-
-# Publish F# Backend
-RUN dotnet publish backend-fs/backend-fs.fsproj -c Release -o /app/publish/backend-fs
-
-# Publish Blazor Frontend
-RUN dotnet publish frontend/AumoBlazor.csproj -c Release -o /app/publish/frontend/wwwroot
-
-# ==========================================
-# 2. Runtime Stage - C# Backend
-# ==========================================
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime-backend
+# 2. Runtime (ASP.NET 10)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-COPY --from=build /app/publish/backend .
-EXPOSE 5000
-ENV ASPNETCORE_URLS=http://+:5000
-ENTRYPOINT ["dotnet", "AumoBackend.dll"]
+COPY --from=build /app/publish .
 
-# ==========================================
-# 3. Runtime Stage - F# Backend
-# ==========================================
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime-backend-fs
-WORKDIR /app
-COPY --from=build /app/publish/backend-fs .
-EXPOSE 5001
-ENV ASPNETCORE_URLS=http://+:5001
-ENTRYPOINT ["dotnet", "backend-fs.dll"]
+ENV ASPNETCORE_ENVIRONMENT=Production
+EXPOSE 8080
 
-# ==========================================
-# 4. Final Stage - Nginx Reverse Proxy & Frontend Host
-# ==========================================
-FROM nginx:alpine AS final
-WORKDIR /usr/share/nginx/html
-
-# Hapus file default Nginx
-RUN rm -rf ./*
-
-# Copy hasil publish Blazor WASM ke direktori static file Nginx
-COPY --from=build /app/publish/frontend/wwwroot/wwwroot .
-
-# Copy konfigurasi Nginx dari folder /nginx/neginx.conf
-COPY nginx/nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 80 443
-CMD ["nginx", "-g", "daemon off;"]
+# Hosting seperti Render/Railway/Heroku mengirim port lewat env PORT; default 8080.
+ENTRYPOINT ["sh", "-c", "ASPNETCORE_URLS=http://+:${PORT:-8080} exec dotnet AumoBlazor.dll"]

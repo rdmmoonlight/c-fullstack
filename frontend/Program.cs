@@ -1,10 +1,10 @@
 using AumoBackend.Extensions;
 using AumoBackend.Services.Auth;
+using AumoBlazor.Hubs;
 using AumoFinance.Components;
 using AumoFinance.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Identity;
 
 namespace AumoBlazor
 {
@@ -58,6 +58,7 @@ namespace AumoBlazor
                 .AddInteractiveServerComponents();
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddHttpContextAccessor();
+            builder.Services.AddSignalR();
 
             // Glue khusus UI (bukan logika bisnis)
             builder.Services.AddScoped<UserContext>();
@@ -104,6 +105,8 @@ namespace AumoBlazor
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
+            // Map Hub URL endpoint SignalR
+            app.MapHub<MarketHub>("/markethub");
             app.Run();
         }
     }
