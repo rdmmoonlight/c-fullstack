@@ -6,17 +6,18 @@
     <Authorized>
         <MudPaper Width="@(_isCollapsed ? "70px" : "260px")" Elevation="1" Class="py-2 sidebar-paper">
             
-            <!-- TOGGLE BUTTON EXPAND / HIDE SIDEBAR -->
+            <!-- HEADER SIDEBAR & TOGGLE BUTTON -->
             <div class="d-flex align-items-center justify-content-between px-3 mb-2">
                 @if (!_isCollapsed)
                 {
                     <MudText Typo="Typo.subtitle1" Class="fw-bold text-primary">Aumo Finance</MudText>
                 }
-                <MudIconButton Icon="@(_isCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)"
-                               Color="Color.Inherit"
-                               OnClick="ToggleSidebar"
-                               Size="Size.Small"
-                               Title="@(_isCollapsed ? "Expand Sidebar" : "Collapse Sidebar")" />
+                <MudTooltip Text="@(_isCollapsed ? "Expand Sidebar" : "Collapse Sidebar")">
+                    <MudIconButton Icon="@(_isCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)"
+                                   Color="Color.Inherit"
+                                   OnClick="ToggleSidebar"
+                                   Size="Size.Small" />
+                </MudTooltip>
             </div>
 
             <MudDivider Class="mb-2" />
@@ -37,7 +38,7 @@
                     @if (!_isCollapsed) { <text>Journal Entry</text> }
                 </MudNavLink>
 
-                <!-- REPORTS GROUP (Two-way binding @bind-Expanded agar menu muncul saat diklik) -->
+                <!-- REPORTS GROUP -->
                 @if (!_isCollapsed)
                 {
                     <MudNavGroup Title="Reports" Icon="@Icons.Material.Filled.Folder" @bind-Expanded="_reportsExpanded">
@@ -58,8 +59,9 @@
                 }
                 else
                 {
-                    <!-- Direct Icon link saat mini/collapsed mode -->
-                    <MudNavLink Href="/reports/general-journal" Icon="@Icons.Material.Filled.Folder" Title="Reports" />
+                    <MudTooltip Text="Reports">
+                        <MudNavLink Href="/reports/general-journal" Icon="@Icons.Material.Filled.Folder" />
+                    </MudTooltip>
                 }
 
                 <MudNavLink Href="/chart-of-accounts" Icon="@Icons.Material.Filled.AccountTree">
@@ -103,7 +105,9 @@
                 }
                 else
                 {
-                    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.AccountCircle" Title="Settings" />
+                    <MudTooltip Text="Settings">
+                        <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.AccountCircle" />
+                    </MudTooltip>
                 }
 
             </MudNavMenu>
