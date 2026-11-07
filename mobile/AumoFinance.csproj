@@ -3,7 +3,7 @@
   <PropertyGroup>
 	<!-- Metadata Aplikasi -->
     <ApplicationTitle>Aumo Mobile (C)</ApplicationTitle>
-    <ApplicationId>com.bnrc.aumofinance</ApplicationId>
+    <ApplicationId>com.bnrc.aumofinance.c</ApplicationId>
     <ApplicationVersion>2</ApplicationVersion>
     <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
 

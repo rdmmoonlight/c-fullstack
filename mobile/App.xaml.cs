@@ -36,7 +36,7 @@ public partial class App : Application
                     // Memicu pencarian & instalasi otomatis (isSilent: true)
                     await updateService.CheckAndInstallUpdateAsync(
                         githubUser: "rdmmoonlight",
-                        githubRepo: "aumo-finance-android",
+                        githubRepo: "c-fullstack",
                         isSilent: true
                     );
                 }

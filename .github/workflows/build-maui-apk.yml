@@ -44,9 +44,22 @@ jobs:
         }
         exit $code
 
+    - name: Pilih satu APK utama
+      shell: pwsh
+      run: |
+        $root = "mobile/bin/Release/net10.0-android36.0"
+        $all = Get-ChildItem -Path $root -Recurse -Filter "*-Signed.apk"
+        Write-Host "::notice title=APK ditemukan::$(($all | ForEach-Object { $_.FullName.Substring($PWD.Path.Length+1) }) -join ' | ')"
+        if (-not $all) { Write-Host "::error::Tidak ada APK Signed ditemukan"; exit 1 }
+        # Prioritaskan hasil publish, jika tidak ada pakai hasil build biasa
+        $main = $all | Sort-Object { if ($_.DirectoryName -like "*publish*") { 0 } else { 1 } } | Select-Object -First 1
+        New-Item -ItemType Directory -Force -Path dist | Out-Null
+        Copy-Item $main.FullName "dist/AumoFinance-C.apk"
+        Write-Host "::notice title=APK dipilih::$($main.FullName)"
+
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: maui-app-release-apk
-        path: mobile/bin/Release/net10.0-android36.0/**/*-Signed.apk
+        name: AumoFinance-C-apk
+        path: dist/AumoFinance-C.apk
         if-no-files-found: error
