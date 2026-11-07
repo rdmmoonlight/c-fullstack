@@ -1,0 +1,182 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using AumoFinance.Services
+
+<header class="navbar navbar-expand topbar-solid py-2 sticky-top position-relative topbar-header">
+    <div class="container-xxl px-3 d-flex align-items-center justify-content-between h-100 position-relative">
+        
+        <!-- RIGHT SECTION: ACTION CONTROLS -->
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <AuthorizeView>
+                <Authorized>
+                    <button
+                        class="btn btn-sm topbar-btn text-secondary p-1 px-2 border-0 shadow-none lh-1 d-flex align-items-center gap-1"
+                        type="button" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Search">
+                        <i class="bi bi-search font-search-icon"></i>
+                        <span class="d-none d-lg-inline text-muted small font-shortcut">Command + K</span>
+                    </button>
+                </Authorized>
+            </AuthorizeView>
+
+            <div class="dropdown">
+                <button class="btn btn-sm topbar-btn text-secondary p-1 border-0 shadow-none lh-1" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false" aria-label="More Options">
+                    <i class="bi bi-three-dots-vertical font-options-icon"></i>
+                </button>
+                <ul
+                    class="dropdown-menu dropdown-menu-end shadow-lg border-secondary border-opacity-25 dropdown-menu-theme">
+                    <li>
+                        <h6 class="dropdown-header py-1 text-uppercase tracking-wider dropdown-header-sm">
+                            Theme Interface
+                        </h6>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item py-1 d-flex align-items-center gap-2"
+                                onclick="setAppTheme('dark')">
+                            <i class="bi bi-moon-stars-fill text-warning"></i> Dark Nebula
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item py-1 d-flex align-items-center gap-2"
+                                onclick="setAppTheme('light')">
+                            <i class="bi bi-sun-fill text-warning"></i> Light Minimal
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
+
+<AuthorizeView>
+    <Authorized>
+        <div
+            class="status-strip px-3 py-1 d-flex justify-content-center align-items-center gap-3 text-nowrap status-strip-bar">
+            <div class="dropdown">
+                <button
+                    class="btn btn-sm btn-link text-decoration-none p-0 fw-medium d-flex align-items-center gap-2 dropdown-toggle shadow-none status-badge"
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi @iconClass"></i>
+                    <span class="text-body fw-semibold @(!hasActivePeriod ? "text-danger" : "")">@periodText</span>
+                    @if (isViewingClosed)
+                    {
+                        <span
+                            class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-monospace badge-locked">
+                            LOCKED
+                        </span>
+                    }
+                </button>
+
+                <ul class="dropdown-menu shadow-lg border-secondary border-opacity-25 mt-1 dropdown-menu-period">
+                    <li>
+                        <h6 class="dropdown-header py-1 text-uppercase dropdown-header-sm">
+                            Accounting Period
+                        </h6>
+                    </li>
+                    <li>
+                        <NavLink class="dropdown-item py-1 text-primary fw-semibold d-flex align-items-center gap-2"
+                                 href="/periods/create">
+                            <i class="bi bi-plus-circle"></i> Open New Period
+                        </NavLink>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider my-1">
+                    </li>
+                    <li>
+                        <NavLink class="dropdown-item py-1 d-flex align-items-center gap-2" href="/periods">
+                            <i class="bi bi-list-ul"></i> Manage All Periods
+                        </NavLink>
+                    </li>
+                    @if (hasActivePeriod)
+                    {
+                        <li>
+                            <NavLink class="dropdown-item py-1 text-danger d-flex align-items-center gap-2"
+                                     href="/periods/clear-selection">
+                                <i class="bi bi-eye-slash"></i> Stop Viewing
+                            </NavLink>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <span class="text-secondary opacity-25">|</span>
+
+            <div class="d-flex align-items-center gap-2 fs-8 font-monospace">
+                <button
+                    class="btn btn-sm btn-link text-success p-0 border-0 shadow-none lh-1 d-flex align-items-center gap-1"
+                    type="button" title="Guardian Security: Protected & Active" aria-label="Guardian Status">
+                    <span class="pulse-dot-green me-1"></span>
+                    <i class="bi bi-shield-check font-status-icon"></i>
+                    <span class="d-none d-sm-inline text-muted font-status-label">PROTECTED</span>
+                </button>
+
+                <span class="text-secondary opacity-25">/</span>
+
+                <button id="syncBtn"
+                        class="btn btn-sm btn-link text-info p-0 border-0 shadow-none lh-1 d-flex align-items-center gap-1"
+                        type="button" title="Sync: Up to date" aria-label="Sync Status">
+                    <i id="syncIcon" class="bi bi-cloud-check font-status-icon"></i>
+                    <span class="d-none d-sm-inline text-muted font-status-label">SYNCED</span>
+                </button>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-top modal-md mt-5">
+                <div class="modal-content topbar-solid border border-secondary border-opacity-25 shadow-lg">
+                    <div class="modal-body p-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-warning">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="search" class="form-control bg-transparent border-0 shadow-none text-body"
+                                   placeholder="Type a command or search accounts, entries..." autofocus>
+                            <button type="button" class="btn-close btn-close-white ms-2 my-auto" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [Inject]
+    private SelectedPeriodProvider PeriodProvider { get; set; } = default!;
+
+    [Inject]
+    private UserContext CurrentUser { get; set; } = default!;
+
+    private string? activePeriodName;
+    private bool hasActivePeriod;
+    private bool isViewingClosed;
+    private string periodText = "No Period Selected";
+    private string iconClass = "bi-calendar-x text-warning";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userId = await CurrentUser.GetUserIdAsync();
+        if (userId == Guid.Empty)
+        {
+            return;
+        }
+
+        var active = await PeriodProvider.GetAsync(userId);
+        if (active is null)
+        {
+            return;
+        }
+
+        activePeriodName = active.PeriodName;
+        hasActivePeriod = !string.IsNullOrEmpty(activePeriodName);
+        isViewingClosed = active.IsClosed;
+        periodText = hasActivePeriod ? activePeriodName! : "No Period Selected";
+        iconClass = !hasActivePeriod
+            ? "bi-calendar-x text-warning"
+            : (isViewingClosed ? "bi-lock-fill text-secondary" : "bi-calendar2-check text-success");
+    }
+}

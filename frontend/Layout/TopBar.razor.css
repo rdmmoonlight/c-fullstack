@@ -1,0 +1,49 @@
+/* Layout & Container Utility */
+.topbar-header {
+    min-height: 56px;
+}
+
+.status-strip-bar {
+    min-height: 30px;
+    font-size: 0.75rem;
+}
+
+/* Typography & Font Sizes */
+.font-search-icon {
+    font-size: 0.825rem;
+}
+
+.font-shortcut {
+    font-size: 0.725rem;
+}
+
+.font-options-icon {
+    font-size: 0.875rem;
+}
+
+.font-status-icon {
+    font-size: 0.825rem;
+}
+
+.font-status-label {
+    font-size: 0.7rem;
+}
+
+.badge-locked {
+    font-size: 0.65rem;
+}
+
+.dropdown-header-sm {
+    font-size: 0.65rem;
+}
+
+/* Dropdown Custom Styles */
+.dropdown-menu-theme {
+    font-size: 0.8rem;
+    min-width: 150px;
+}
+
+.dropdown-menu-period {
+    font-size: 0.75rem;
+    min-width: 190px;
+}

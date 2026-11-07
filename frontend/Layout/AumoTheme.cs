@@ -1,6 +1,6 @@
 using MudBlazor;
 
-namespace AumoFinance.Components.Layout.Theme
+namespace AumoFinance.Layout.Theme
 {
     public static class AumoTheme
     {

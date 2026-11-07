@@ -5,7 +5,7 @@
     <ApplicationTitle>Aumo Mobile (C)</ApplicationTitle>
     <ApplicationId>com.bnrc.aumofinance.c</ApplicationId>
     <ApplicationVersion>2</ApplicationVersion>
-    <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
+    <ApplicationDisplayVersion>2.1.0</ApplicationDisplayVersion>
 
     <!-- Bypass Workload Validation untuk Restore/Dependabot -->
     <MauiEnableWorkloadValidation>false</MauiEnableWorkloadValidation>
@@ -53,7 +53,7 @@
 
   <!-- Package Dependencies -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
 
     <!-- Database & Entity Framework Core -->

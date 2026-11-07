@@ -1,9 +1,9 @@
 @inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
 @using MudBlazor
-@using AumoFinance.Components.Layout.Theme
+@using AumoFinance.Layout.Theme
 
-@* Menggunakan AumoTheme dari namespace AumoFinance.Components.Layout.Theme *@
+@* Menggunakan AumoTheme dari namespace AumoFinance.Layout.Theme *@
 <MudThemeProvider Theme="AumoTheme.Theme" IsDarkMode="true" />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -14,7 +14,7 @@
     <!-- TOPBAR -->
     <AuthorizeView>
         <Authorized>
-            <AumoFinance.Components.Layout.TopBar />
+            <AumoFinance.Layout.TopBar />
         </Authorized>
     </AuthorizeView>
 
@@ -22,7 +22,7 @@
     <div class="d-flex flex-grow-1 position-relative">
         
         <!-- SIDEBAR -->
-        <AumoFinance.Components.Layout.NavMenu />
+        <AumoFinance.Layout.NavMenu />
 
         <!-- MAIN CONTENT AREA -->
         <main id="mainContent" class="content flex-grow-1 p-2 p-md-4 d-flex flex-column" role="main">
