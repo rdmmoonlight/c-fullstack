@@ -37,7 +37,10 @@
 
                     <!-- MENU REPORTS (TOGGLE FLYOUT) -->
                     <li class="nav-item mb-2">
-                        <button type="button" @onclick="ToggleReportsFlyout" @onclick:stopPropagation="true"
+                        <button type="button" 
+                                @onclick="ToggleReportsFlyout" 
+                                @onclick:stopPropagation="true"
+                                @onclick:preventDefault="true"
                                 class="nav-link icon-btn border-0 bg-transparent @(showReportsFlyout ? "active" : "")"
                                 title="Reports">
                             <i class="bi bi-folder fs-5"></i>
@@ -196,10 +199,12 @@
     private void ToggleReportsFlyout()
     {
         showReportsFlyout = !showReportsFlyout;
+        StateHasChanged();
     }
 
     private void CloseFlyout()
     {
         showReportsFlyout = false;
+        StateHasChanged();
     }
 }
