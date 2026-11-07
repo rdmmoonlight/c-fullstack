@@ -1,9 +1,11 @@
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden; /* Mencegah horizontal scrollbar saat flyout terbuka di layar kecil */
 }
 
 .content {
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, padding 0.3s ease;
+    min-width: 0; /* Mencegah Flexbox child meluap (overflow) dari layar */
 }
 
 @media (max-width: 767.98px) {
