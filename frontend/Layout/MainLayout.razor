@@ -21,8 +21,8 @@
     <!-- SHELL UTAMA -->
     <div class="d-flex flex-grow-1 position-relative">
         
-        <!-- SIDEBAR -->
-        <AumoFinance.Layout.NavMenu />
+        <!-- SIDEBAR (Ditambahkan RenderMode InteractiveServer secara eksplisit) -->
+        <AumoFinance.Layout.NavMenu @rendermode="InteractiveServer" />
 
         <!-- MAIN CONTENT AREA -->
         <main id="mainContent" class="content flex-grow-1 p-2 p-md-4 d-flex flex-column" role="main">
