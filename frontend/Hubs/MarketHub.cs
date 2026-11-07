@@ -1,7 +1,7 @@
 using AumoBackend.DTOs.Home;
 using Microsoft.AspNetCore.SignalR;
 
-namespace AumoBlazor.Hubs;
+namespace AumoFinance.Hubs;
 
 public class MarketHub : Hub
 {

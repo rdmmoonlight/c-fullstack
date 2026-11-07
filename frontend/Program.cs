@@ -1,13 +1,12 @@
 using AumoBackend.Extensions;
 using AumoBackend.Services.Auth;
-using AumoBlazor.Hubs;
-using AumoFinance;
+using AumoFinance.Hubs;
 using AumoFinance.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.HttpOverrides;
 using MudBlazor.Services;
 
-namespace AumoBlazor
+namespace AumoFinance
 {
     public class Program
     {
@@ -16,8 +15,7 @@ namespace AumoBlazor
             var builder = WebApplication.CreateBuilder(args);
 
             // =====================================
-            // 1. BACKEND (SSOT): database, Identity, cache, dan seluruh service bisnis
-            //    dipakai langsung dari project /backend. Frontend tidak menulis ulang logika apa pun.
+            // 1. BACKEND (SSOT) & SERVICES
             // =====================================
             builder.Services.AddHttpClient();
             builder.Services.AddDatabaseServices(builder.Configuration);
@@ -27,7 +25,7 @@ namespace AumoBlazor
             builder.Services.AddMudServices();
             builder.Services.AddValidatorsFromAssemblyContaining<AumoBackend.Program>();
 
-            // Cookie sesi untuk UI: pengguna yang belum login diarahkan ke halaman login (bukan 401 seperti API).
+            // Cookie sesi untuk UI
             builder.Services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = "/auth/login";
@@ -54,15 +52,18 @@ namespace AumoBlazor
             });
 
             // =====================================
-            // 2. BLAZOR
+            // 2. BLAZOR SERVER & SIGNALR HUB SERVICES
             // =====================================
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
-            builder.Services.AddCascadingAuthenticationState();
-            builder.Services.AddHttpContextAccessor();
+
+            // Diperlukan untuk custom SignalR Hubs (MarketHub)
             builder.Services.AddSignalR();
 
-            // Glue khusus UI (bukan logika bisnis)
+            builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddHttpContextAccessor();
+
+            // Glue khusus UI (State & Workflow)
             builder.Services.AddScoped<UserContext>();
             builder.Services.AddScoped<SelectedPeriodProvider>();
             builder.Services.AddScoped<JournalImportWorkflow>();
@@ -77,7 +78,7 @@ namespace AumoBlazor
             var app = builder.Build();
 
             // =====================================
-            // 3. PIPELINE
+            // 3. PIPELINE & MIDDLEWARE
             // =====================================
             app.UseForwardedHeaders();
 
@@ -96,6 +97,9 @@ namespace AumoBlazor
             app.UseAuthorization();
             app.UseAntiforgery();
 
+            // =====================================
+            // 4. ENDPOINTS MAPPING
+            // =====================================
             app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
 
             app.MapPost("/auth/logout", async (IAuthService auth) =>
@@ -104,11 +108,13 @@ namespace AumoBlazor
                 return Results.Redirect("/auth/login");
             }).DisableAntiforgery();
 
+            // Custom SignalR Hub Endpoint
+            app.MapHub<MarketHub>("/markethub");
+
+            // Blazor Interactive Server Rendering
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
-            // Map Hub URL endpoint SignalR
-            app.MapHub<MarketHub>("/markethub");
             app.Run();
         }
     }

@@ -13,10 +13,9 @@
                 {
                     <MudText Typo="Typo.subtitle1" Class="fw-bold text-primary">Aumo Finance</MudText>
                 }
-                <MudIconButton Icon="@(_isCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)"
-                               Color="Color.Inherit"
-                               OnClick="ToggleSidebar"
-                               Size="Size.Small" />
+                <MudIconButton
+                Icon="@(_isCollapsed ? Icons.Material.Filled.ChevronRight : Icons.Material.Filled.ChevronLeft)"
+                Color="Color.Inherit" OnClick="ToggleSidebar" Size="Size.Small" />
             </div>
 
             <MudDivider Class="mb-2" />
@@ -24,17 +23,27 @@
             <MudNavMenu Color="Color.Primary" Bordered="true">
                 
                 <!-- BRAND / HOME -->
-                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Warning">
-                    @if (!_isCollapsed) { <text>Home</text> }
+                <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home"
+                            IconColor="Color.Warning">
+                    @if (!_isCollapsed)
+                    {
+                        <text>Home</text>
+                    }
                 </MudNavLink>
 
                 <!-- MAIN NAVIGATION -->
                 <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">
-                    @if (!_isCollapsed) { <text>Dashboard</text> }
+                    @if (!_isCollapsed)
+                    {
+                        <text>Dashboard</text>
+                    }
                 </MudNavLink>
 
                 <MudNavLink Href="/journal-entry/create" Icon="@Icons.Material.Filled.PostAdd">
-                    @if (!_isCollapsed) { <text>Journal Entry</text> }
+                    @if (!_isCollapsed)
+                    {
+                        <text>Journal Entry</text>
+                    }
                 </MudNavLink>
 
                 <!-- REPORTS GROUP (Diset Expanded="true" secara default agar submenu langsung muncul) -->
@@ -42,7 +51,8 @@
                 {
                     <MudNavGroup Title="Reports" Icon="@Icons.Material.Filled.Folder" @bind-Expanded="_reportsExpanded">
                         <MudNavLink Href="/reports/general-journal">General Journal</MudNavLink>
-                        <MudNavLink Href="/reports/general-ledger" Match="NavLinkMatch.All">GL (Permanent Accounts)</MudNavLink>
+                        <MudNavLink Href="/reports/general-ledger" Match="NavLinkMatch.All">GL (Permanent Accounts)
+                        </MudNavLink>
                         <MudNavLink Href="/reports/general-ledger/true">GL (Temporary Accounts)</MudNavLink>
                         <MudNavLink Href="/reports/trial-balance" Match="NavLinkMatch.All">Trial Balance</MudNavLink>
                         <MudNavLink Href="/reports/adjusting-journal">Adjusting Journal</MudNavLink>
@@ -62,15 +72,24 @@
                 }
 
                 <MudNavLink Href="/chart-of-accounts" Icon="@Icons.Material.Filled.AccountTree">
-                    @if (!_isCollapsed) { <text>Chart of Accounts</text> }
+                    @if (!_isCollapsed)
+                    {
+                        <text>Chart of Accounts</text>
+                    }
                 </MudNavLink>
 
                 <MudNavLink Href="/periods" Icon="@Icons.Material.Filled.CalendarMonth">
-                    @if (!_isCollapsed) { <text>Financial Periods</text> }
+                    @if (!_isCollapsed)
+                    {
+                        <text>Financial Periods</text>
+                    }
                 </MudNavLink>
 
                 <MudNavLink Href="/tools" Icon="@Icons.Material.Filled.Build">
-                    @if (!_isCollapsed) { <text>Tools</text> }
+                    @if (!_isCollapsed)
+                    {
+                        <text>Tools</text>
+                    }
                 </MudNavLink>
 
                 <MudDivider Class="my-2" />
@@ -79,8 +98,7 @@
                 @if (!_isCollapsed)
                 {
                     <MudNavGroup Title="@(context.User.Identity?.Name ?? "User")"
-                                 Icon="@Icons.Material.Filled.AccountCircle"
-                                 @bind-Expanded="_userGroupExpanded">
+                                 Icon="@Icons.Material.Filled.AccountCircle" @bind-Expanded="_userGroupExpanded">
                         <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">
                             Settings
                         </MudNavLink>
@@ -88,11 +106,8 @@
                         <div class="px-4 py-2">
                             <form action="/auth/logout" method="post">
                                 <AntiforgeryToken />
-                                <MudButton ButtonType="ButtonType.Submit" 
-                                           Variant="Variant.Text" 
-                                           Color="Color.Error" 
-                                           StartIcon="@Icons.Material.Filled.Logout" 
-                                           FullWidth="true"
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Text" Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Logout" FullWidth="true"
                                            Style="justify-content: flex-start;">
                                     Sign Out
                                 </MudButton>
@@ -118,5 +133,6 @@
     private void ToggleSidebar()
     {
         _isCollapsed = !_isCollapsed;
+        StateHasChanged();
     }
 }
