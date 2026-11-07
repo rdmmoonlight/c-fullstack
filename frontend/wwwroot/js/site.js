@@ -188,3 +188,58 @@ window.aumoDownload = function (fileName, contentType, base64) {
     link.click();
     document.body.removeChild(link);
 };
+
+
+// ==========================================
+// Sidebar Reports Flyout (lipat / buka)
+// ==========================================
+//
+// Murni JavaScript + delegasi event pada document, sehingga tetap
+// berfungsi walau DOM dirender ulang oleh Blazor dan tidak bergantung
+// pada koneksi sirkuit Blazor Server.
+//
+
+window.aumoSidebar = {
+    set: function (open) {
+        const wrapper = document.querySelector('.sidebar-wrapper');
+        if (!wrapper) return;
+
+        wrapper.classList.toggle('flyout-open', open);
+
+        const toggle = wrapper.querySelector('[data-flyout-toggle]');
+        if (toggle) {
+            toggle.classList.toggle('active', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+    },
+
+    isOpen: function () {
+        const wrapper = document.querySelector('.sidebar-wrapper');
+        return !!wrapper && wrapper.classList.contains('flyout-open');
+    }
+};
+
+document.addEventListener('click', function (event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    if (target.closest('[data-flyout-toggle]')) {
+        window.aumoSidebar.set(!window.aumoSidebar.isOpen());
+        return;
+    }
+
+    if (!window.aumoSidebar.isOpen()) return;
+
+    if (target.closest('[data-flyout-close]') ||
+        target.closest('.sidebar-backdrop') ||
+        target.closest('.sidebar-flyout a') ||
+        target.closest('.sidebar-icons a')) {
+        window.aumoSidebar.set(false);
+    }
+});
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+        window.aumoSidebar.set(false);
+    }
+});

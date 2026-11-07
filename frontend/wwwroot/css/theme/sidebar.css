@@ -86,20 +86,27 @@
 
 /* 4. BACKDROP: klik di luar panel = lipat menu Reports */
 .sidebar-backdrop {
+    display: none;
     position: fixed;
     inset: 0;
     z-index: 1035;
     background: transparent;
 }
 
-/* 5. FLYOUT REPORTS */
+/* 5. FLYOUT REPORTS (dibuka/dilipat lewat class .flyout-open dari site.js) */
+.sidebar-wrapper.flyout-open .sidebar-backdrop,
+.sidebar-wrapper.flyout-open .sidebar-flyout {
+    display: block;
+}
+
 .sidebar-flyout {
-    position: absolute;
+    display: none;
+    position: fixed;
     top: 10px;
     left: 78px;
     width: 270px;
     height: calc(100vh - 20px);
-    z-index: 1040;
+    z-index: 1050;
     background: rgba(15, 23, 42, 0.92);
     background-image: radial-gradient(circle at top left, rgba(245, 158, 11, 0.08), transparent 45%);
     backdrop-filter: blur(20px);
