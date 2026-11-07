@@ -4,7 +4,7 @@
 	<!-- Metadata Aplikasi -->
     <ApplicationTitle>Aumo Mobile (C)</ApplicationTitle>
     <ApplicationId>com.bnrc.aumofinance</ApplicationId>
-    <ApplicationVersion>2.0.0</ApplicationVersion>
+    <ApplicationVersion>2</ApplicationVersion>
     <ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
 
     <!-- Bypass Workload Validation untuk Restore/Dependabot -->
