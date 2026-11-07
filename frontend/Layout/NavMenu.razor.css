@@ -1,4 +1,10 @@
 /* STICKY CONTAINER UTAMA */
+.sidebar-wrapper {
+    display: flex;
+    position: relative;
+    z-index: 1030;
+}
+
 .sidebar-sticky-neon {
     position: -webkit-sticky;
     position: sticky;
@@ -6,22 +12,22 @@
     height: 100vh;
     max-height: 100vh;
     align-self: flex-start;
-    z-index: 1030;
     flex-shrink: 0;
 }
 
-/* KOTAK DOCK UNGU DENGAN FULL WHITE NEON BORDER (360 DERAJAT) */
+/* KOTAK DOCK UNGU DENGAN FULL WHITE NEON BORDER */
 .sidebar-icons {
     width: 65px;
     height: 100vh;
     background-color: #1a1625;
-    /* BORDER NEON PUTIH MENGELILINGI KOTAK IKON */
     border: 2px solid #ffffff;
     border-radius: 8px;
     box-shadow:
         0 0 5px #ffffff,
         0 0 15px #ffffff,
         0 0 30px #ffffff;
+    position: relative;
+    z-index: 1032;
 }
 
 /* HOLOGRAM FLYOUT PANEL WITH MATCHING NEON BORDER */
@@ -29,15 +35,16 @@
     width: 230px;
     height: 100vh;
     overflow-y: auto;
-    background-color: rgba(26, 22, 37, 0.95);
+    background-color: rgba(26, 22, 37, 0.98);
     backdrop-filter: blur(8px);
     margin-left: 6px;
-    /* BORDER NEON PUTIH UNTUK PANEL FLYOUT */
     border: 2px solid #ffffff;
     border-radius: 8px;
     box-shadow:
         0 0 5px #ffffff,
         0 0 12px rgba(255, 255, 255, 0.6);
+    position: relative;
+    z-index: 1031;
 }
 
 /* TOMBOL IKON NAVIGASI */
@@ -51,7 +58,6 @@
     transition: all 0.2s ease-in-out;
 }
 
-/* ::deep digunakan agar style mempengeruhi child element dari NavLink yang di-render Blazor */
 ::deep .icon-btn:hover,
 ::deep .icon-btn.active {
     color: #ffffff;
